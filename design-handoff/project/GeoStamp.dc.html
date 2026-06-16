@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'IBM Plex Sans', system-ui, sans-serif; color: #16212B; background: #FAF7F0; -webkit-font-smoothing: antialiased; }
+  input, button, textarea { font-family: inherit; }
+  ::selection { background: rgba(255,90,60,0.22); }
+  @keyframes pinDrop { 0% { transform: translate(-50%, -130%) scale(0.6); opacity: 0; } 60% { transform: translate(-50%, -92%) scale(1.05); opacity: 1; } 100% { transform: translate(-50%, -100%) scale(1); opacity: 1; } }
+  @keyframes pinPulse { 0% { box-shadow: 0 0 0 0 rgba(255,90,60,0.45); } 70% { box-shadow: 0 0 0 16px rgba(255,90,60,0); } 100% { box-shadow: 0 0 0 0 rgba(255,90,60,0); } }
+  @keyframes toastIn { from { transform: translate(-50%, 14px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+  @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: #E3DCCD; border-radius: 999px; border: 3px solid #FAF7F0; }
+  ::-webkit-scrollbar-track { background: transparent; }
+</style>
+</helmet>
+
+<div style="height: 100vh; width: 100%; display: flex; flex-direction: column; overflow: hidden; background: #FAF7F0;">
+
+  <!-- ============ APP TOP BAR ============ -->
+  <sc-if value="{{ isApp }}" hint-placeholder-val="{{ true }}">
+  <header style="height: 60px; flex: none; display: flex; align-items: center; gap: 24px; padding: 0 20px; background: #FFFFFF; border-bottom: 1px solid #E3DCCD; z-index: 40;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div style="width: 30px; height: 30px; border-radius: 8px; background: #16212B; display: flex; align-items: center; justify-content: center; position: relative;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FF5A3C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+      </div>
+      <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 18px; letter-spacing: -0.02em; color: #16212B;">{{ productName }}</span>
+    </div>
+
+    <nav style="display: flex; align-items: center; gap: 2px; margin-left: 8px;">
+      <button onClick="{{ goWorkspace }}" style="{{ navWorkspaceStyle }}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+        Workspace
+      </button>
+      <button onClick="{{ goLibrary }}" style="{{ navLibraryStyle }}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5L9 20"/></svg>
+        Library
+      </button>
+      <button onClick="{{ goReports }}" style="{{ navReportsStyle }}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18 3 20V6l6-2 6 2 6-2v14l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/></svg>
+        Reports
+      </button>
+    </nav>
+
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 14px;">
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 184px;">
+        <div style="display: flex; justify-content: space-between; font-size: 11px; color: #5C6670;">
+          <span style="font-weight: 500; white-space: nowrap;">Usage this month</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; color: #16212B;">{{ usageLabel }}</span>
+        </div>
+        <div style="height: 5px; background: #F2EEE4; border-radius: 999px; overflow: hidden;">
+          <div style="{{ usageBarStyle }}"></div>
+        </div>
+      </div>
+      <button onClick="{{ openLicense }}" style="display: flex; align-items: center; gap: 7px; height: 34px; padding: 0 13px; border-radius: 8px; border: 1px solid #E3DCCD; background: #FFFFFF; color: #16212B; font-size: 13px; font-weight: 500; cursor: pointer;" style-hover="background:#F2EEE4;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0E7C7B" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.5 12.5 8-8M16 4l3 3M18 6l2 2"/></svg>
+        Enter license key
+      </button>
+      <div style="width: 34px; height: 34px; border-radius: 999px; background: linear-gradient(135deg, #0E7C7B, #16212B); display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-weight: 600; font-size: 13px; cursor: pointer;">AM</div>
+    </div>
+  </header>
+  </sc-if>
+
+  <!-- ============ WORKSPACE ============ -->
+  <sc-if value="{{ isWorkspace }}" hint-placeholder-val="{{ true }}">
+  <main style="flex: 1; min-height: 0; display: flex; overflow: hidden;">
+
+    <!-- LEFT: PHOTO TRAY -->
+    <aside style="width: 312px; flex: none; background: #FFFFFF; border-right: 1px solid #E3DCCD; display: flex; flex-direction: column; min-height: 0;">
+      <div style="padding: 16px 16px 12px; border-bottom: 1px solid #F2EEE4;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <div style="display: flex; align-items: baseline; gap: 8px;">
+            <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px;">Photos</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #5C6670;">{{ photoCount }}</span>
+          </div>
+          <button onClick="{{ clearAll }}" style="background: none; border: none; color: #5C6670; font-size: 12px; cursor: pointer; padding: 4px;" style-hover="color:#D2402F;">Clear</button>
+        </div>
+        <div onClick="{{ noop }}" style="border: 1.5px dashed #D8CFBC; border-radius: 12px; background: #FAF7F0; padding: 14px; display: flex; align-items: center; gap: 11px; cursor: pointer; position: relative; overflow: hidden;" style-hover="border-color:#FF5A3C; background:#FFF5F2;">
+          <div style="width: 34px; height: 34px; border-radius: 9px; background: #FFFFFF; border: 1px solid #E3DCCD; display: flex; align-items: center; justify-content: center; flex: none;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FF5A3C" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 16v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2"/></svg>
+          </div>
+          <div style="min-width: 0;">
+            <div style="font-size: 12.5px; font-weight: 500; color: #16212B;">Drag photos here or browse</div>
+            <div style="font-size: 11px; color: #5C6670; margin-top: 2px;">JPG · PNG · WebP · HEIC</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding: 10px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #F2EEE4;">
+        <button onClick="{{ selectAll }}" style="flex: 1; height: 30px; border-radius: 7px; border: 1px solid #E3DCCD; background: #FFFFFF; color: #16212B; font-size: 12px; font-weight: 500; cursor: pointer;" style-hover="background:#F2EEE4;">Select all</button>
+        <button onClick="{{ applyAll }}" style="flex: 1; height: 30px; border-radius: 7px; border: none; background: #16212B; color: #FFFFFF; font-size: 12px; font-weight: 500; cursor: pointer;" style-hover="background:#0d161e;">Apply to all</button>
+      </div>
+
+      <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 12px 16px 16px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <sc-for list="{{ photoCards }}" as="card" hint-placeholder-count="6">
+            <div onClick="{{ card.onSelect }}" style="{{ card.cardStyle }}">
+              <div style="{{ card.thumbStyle }}">
+                <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(22,33,43,0.55)); "></div>
+                <svg style="position: absolute; right: 6px; top: 6px; opacity: 0.85;" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="3.2"/><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7H7l1.4-2h7.2L17 7h2.5A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5Z"/></svg>
+                <div onClick="{{ card.onToggle }}" style="{{ card.checkStyle }}">
+                  <sc-if value="{{ card.checked }}" hint-placeholder-val="{{ false }}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></sc-if>
+                </div>
+                <sc-if value="{{ card.hasLocation }}" hint-placeholder-val="{{ false }}">
+                  <div style="position: absolute; left: 6px; bottom: 6px; width: 18px; height: 18px; border-radius: 999px; background: rgba(255,90,60,0.95); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(22,33,43,0.4);"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
+                </sc-if>
+              </div>
+              <div style="padding: 7px 8px 8px;">
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: #16212B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ card.name }}</div>
+                <div style="{{ card.badgeStyle }}">
+                  <span style="{{ card.dotStyle }}"></span>{{ card.statusLabel }}
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <button onClick="{{ openCsv }}" style="margin-top: 14px; width: 100%; height: 36px; border-radius: 9px; border: 1px dashed #C9B89E; background: #FAF7F0; color: #16212B; font-size: 12.5px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px;" style-hover="border-color:#0E7C7B; color:#0E7C7B;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 13h2M8 17h2M14 13h2M14 17h2"/></svg>
+          Bulk-assign by CSV
+        </button>
+      </div>
+    </aside>
+
+    <!-- CENTER: MAP -->
+    <section ref="{{ setMapRef }}" style="flex: 1; min-width: 0; position: relative; overflow: hidden; background: #EAE6DB;">
+      <svg width="100%" height="100%" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" style="position: absolute; inset: 0;">
+        <rect width="800" height="600" fill="#EFEADD"/>
+        <g opacity="0.5"><path d="M-20 120 C 150 90, 300 160, 480 110 S 760 60, 840 120" fill="none" stroke="#16212B" stroke-width="1" opacity="0.10"/><path d="M-20 180 C 150 150, 300 220, 480 170 S 760 120, 840 180" fill="none" stroke="#16212B" stroke-width="1" opacity="0.08"/><path d="M-20 470 C 180 430, 320 510, 520 460 S 770 420, 840 470" fill="none" stroke="#16212B" stroke-width="1" opacity="0.09"/><path d="M-20 520 C 180 480, 320 560, 520 510 S 770 470, 840 520" fill="none" stroke="#16212B" stroke-width="1" opacity="0.07"/></g>
+        <path d="M540 -20 C 520 120, 640 220, 600 360 C 575 470, 660 560, 640 640 L 860 640 L 860 -20 Z" fill="#CFE3DF" opacity="0.85"/>
+        <path d="M540 -20 C 520 120, 640 220, 600 360 C 575 470, 660 560, 640 640" fill="none" stroke="#0E7C7B" stroke-width="2" opacity="0.25"/>
+        <rect x="70" y="320" width="150" height="120" rx="8" fill="#D5E3C8" opacity="0.8"/>
+        <path d="M70 380 h150 M145 320 v120" stroke="#B7CBA6" stroke-width="2" opacity="0.6" fill="none"/>
+        <g stroke="#E3DCCD" stroke-width="13" fill="none" stroke-linecap="round"><path d="M-20 240 H 820"/><path d="M-20 410 H 560"/><path d="M260 -20 V 620"/><path d="M450 -20 V 360"/><path d="M40 -20 L 380 360"/></g>
+        <g stroke="#FFFFFF" stroke-width="8" fill="none" stroke-linecap="round"><path d="M-20 240 H 820"/><path d="M-20 410 H 560"/><path d="M260 -20 V 620"/><path d="M450 -20 V 360"/><path d="M40 -20 L 380 360"/></g>
+        <g stroke="#FFFFFF" stroke-width="3.5" fill="none" stroke-linecap="round" opacity="0.9"><path d="M120 -20 V 620"/><path d="M620 200 H 860"/><path d="M-20 520 H 560"/><path d="M340 240 V 620"/></g>
+        <g fill="#E3DCCD" opacity="0.55"><rect x="290" y="60" width="60" height="50" rx="3"/><rect x="370" y="50" width="55" height="70" rx="3"/><rect x="290" y="270" width="50" height="50" rx="3"/><rect x="380" y="270" width="55" height="55" rx="3"/><rect x="150" y="160" width="70" height="50" rx="3"/><rect x="60" y="160" width="60" height="50" rx="3"/><rect x="290" y="440" width="55" height="60" rx="3"/><rect x="380" y="450" width="60" height="55" rx="3"/></g>
+      </svg>
+
+      <!-- search -->
+      <div style="position: absolute; top: 16px; left: 16px; width: 380px; max-width: calc(100% - 120px); z-index: 20;">
+        <div style="display: flex; align-items: center; gap: 9px; height: 44px; padding: 0 14px; background: #FFFFFF; border: 1px solid #E3DCCD; border-radius: 11px; box-shadow: 0 8px 30px rgba(22,33,43,0.10);">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5C6670" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input value="{{ searchQuery }}" onInput="{{ onSearch }}" onFocus="{{ onSearchFocus }}" placeholder="Search an address or place" style="flex: 1; border: none; outline: none; background: transparent; font-size: 14px; color: #16212B;"/>
+          <kbd style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #5C6670; background: #F2EEE4; padding: 2px 6px; border-radius: 5px;">⌘K</kbd>
+        </div>
+        <sc-if value="{{ searchOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top: 6px; background: #FFFFFF; border: 1px solid #E3DCCD; border-radius: 11px; box-shadow: 0 8px 30px rgba(22,33,43,0.12); overflow: hidden;">
+            <sc-for list="{{ suggestions }}" as="s" hint-placeholder-count="4">
+              <button onClick="{{ s.onPick }}" style="width: 100%; display: flex; align-items: center; gap: 11px; padding: 10px 14px; background: none; border: none; border-bottom: 1px solid #F2EEE4; cursor: pointer; text-align: left;" style-hover="background:#FAF7F0;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FF5A3C" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                <div style="min-width: 0;"><div style="font-size: 13px; font-weight: 500; color: #16212B;">{{ s.title }}</div><div style="font-size: 11.5px; color: #5C6670; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ s.sub }}</div></div>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+
+      <!-- map controls -->
+      <div style="position: absolute; top: 16px; right: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 20;">
+        <div style="background: #FFFFFF; border: 1px solid #E3DCCD; border-radius: 10px; box-shadow: 0 4px 16px rgba(22,33,43,0.08); overflow: hidden; display: flex; flex-direction: column;">
+          <button onClick="{{ noop }}" style="width: 38px; height: 38px; border: none; background: none; cursor: pointer; color: #16212B; border-bottom: 1px solid #F2EEE4;" style-hover="background:#F2EEE4;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+          <button onClick="{{ noop }}" style="width: 38px; height: 38px; border: none; background: none; cursor: pointer; color: #16212B;" style-hover="background:#F2EEE4;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+        </div>
+        <button onClick="{{ recenter }}" style="width: 38px; height: 38px; border: 1px solid #E3DCCD; background: #FFFFFF; border-radius: 10px; box-shadow: 0 4px 16px rgba(22,33,43,0.08); cursor: pointer; color: #16212B; display: flex; align-items: center; justify-content: center;" style-hover="background:#F2EEE4;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
+        <div style="background: #FFFFFF; border: 1px solid #E3DCCD; border-radius: 10px; box-shadow: 0 4px 16px rgba(22,33,43,0.08); overflow: hidden; display: flex;">
+          <button onClick="{{ noop }}" style="padding: 0 11px; height: 34px; border: none; background: #16212B; color: #fff; font-size: 12px; font-weight: 500; cursor: pointer;">Street</button>
+          <button onClick="{{ noop }}" style="padding: 0 11px; height: 34px; border: none; background: none; color: #5C6670; font-size: 12px; font-weight: 500; cursor: pointer;" style-hover="background:#F2EEE4;">Satellite</button>
+        </div>
+      </div>
+
+      <!-- the pin -->
+      <div onPointerDown="{{ startDrag }}" style="{{ pinStyle }}">
+        <div style="width: 30px; height: 30px; border-radius: 999px 999px 999px 2px; background: #FF5A3C; transform: rotate(45deg); box-shadow: 0 4px 10px rgba(22,33,43,0.30); display: flex; align-items: center; justify-content: center; animation: pinPulse 2.4s ease-out infinite;"><div style="width: 11px; height: 11px; border-radius: 999px; background: #FFFFFF;"></div></div>
+      </div>
+
+      <!-- coordinate readout -->
+      <div style="position: absolute; left: 16px; bottom: 16px; z-index: 20; background: #FFFFFF; border: 1px solid #E3DCCD; border-radius: 10px; box-shadow: 0 4px 16px rgba(22,33,43,0.08); padding: 9px 13px; display: flex; align-items: center; gap: 14px;">
+        <div style="display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.08em; color: #5C6670;">Lat</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #16212B;">{{ latStr }}</span></div>
+        <div style="width: 1px; height: 26px; background: #E3DCCD;"></div>
+        <div style="display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.08em; color: #5C6670;">Lng</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #16212B;">{{ lngStr }}</span></div>
+        <div style="width: 1px; height: 26px; background: #E3DCCD;"></div>
+        <div style="display: flex; flex-direction: column; gap: 2px; max-width: 220px;"><span style="font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.08em; color: #5C6670;">Resolved</span><span style="font-size: 12.5px; color: #16212B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ addressStr }}</span></div>
+      </div>
+
+      <!-- apply bar -->
+      <div style="position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 20; display: flex; align-items: center; gap: 8px; background: #16212B; border-radius: 12px; box-shadow: 0 8px 30px rgba(22,33,43,0.22); padding: 8px;">
+        <button onClick="{{ applyChecked }}" style="height: 36px; padding: 0 14px; border-radius: 8px; border: none; background: #FF5A3C; color: #FFFFFF; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 7px;" style-hover="background:#E8482C;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Apply to selected <span style="font-family: 'IBM Plex Mono', monospace; opacity: 0.8;">{{ checkedCount }}</span></button>
+        <button onClick="{{ applyAll }}" style="height: 36px; padding: 0 14px; border-radius: 8px; border: none; background: rgba(255,255,255,0.10); color: #FFFFFF; font-size: 13px; font-weight: 500; cursor: pointer;" style-hover="background:rgba(255,255,255,0.18);">Apply to all</button>
+        <button onClick="{{ noop }}" style="height: 36px; padding: 0 12px; border-radius: 8px; border: none; background: none; color: #9AA6B2; font-size: 13px; font-weight: 500; cursor: pointer;" style-hover="color:#fff;">Set as default</button>
+      </div>
+    </section>
+
+    <!-- RIGHT: INSPECTOR -->
+    <aside style="width: 344px; flex: none; background: #FFFFFF; border-left: 1px solid #E3DCCD; display: flex; flex-direction: column; min-height: 0;">
+      <div style="padding: 14px 18px 0;">
+        <div style="display: flex; align-items: center; gap: 9px; margin-bottom: 12px;">
+          <div style="{{ selThumbStyle }}"></div>
+          <div style="min-width: 0;">
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #16212B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ selName }}</div>
+            <div style="font-size: 11.5px; color: #5C6670;">{{ selSubLabel }}</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 2px; background: #F2EEE4; border-radius: 9px; padding: 3px;">
+          <button onClick="{{ tabLocation }}" style="{{ tabLocationStyle }}">Location</button>
+          <button onClick="{{ tabSeo }}" style="{{ tabSeoStyle }}">SEO metadata</button>
+          <button onClick="{{ tabExif }}" style="{{ tabExifStyle }}">EXIF</button>
+        </div>
+      </div>
+
+      <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 16px 18px 18px;">
+        <!-- LOCATION TAB -->
+        <sc-if value="{{ tabIsLocation }}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <label style="display: flex; flex-direction: column; gap: 5px;"><span style="font-size: 11px; font-weight: 500; color: #5C6670;">Latitude</span><input value="{{ latStr }}" readonly style="height: 36px; border: 1px solid #E3DCCD; border-radius: 8px; padding: 0 10px; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #16212B; background: #FAF7F0;"/></label>
+              <label style="display: flex; flex-direction: column; gap: 5px;"><span style="font-size: 11px; font-weight: 500; color: #5C6670;">Longitude</span><input value="{{ lngStr }}" readonly style="height: 36px; border: 1px solid #E3DCCD; border-radius: 8px; padding: 0 10px; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #16212B; background: #FAF7F0;"/></label>
+              <label style="display: flex; flex-direction: column; gap: 5px;"><span style="font-size: 11px; font-weight: 500; color: #5C6670;">Altitude (m)</span><input value="{{ selAltitude }}" onInput="{{ onAltitude }}" style="height: 36px; border: 1px solid #E3DCCD; border-radius: 8px; padding: 0 10px; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #16212B;"/></label>
+              <label style="display: flex; flex-direction: column; gap: 5px;"><span style="font-size: 11px; font-weight: 500; color: #5C6670;">Heading</span><input value="{{ selHeading }}" onInput="{{ onHeading }}" style="height: 36px; border: 1px solid #E3DCCD; border-radius: 8px; padding: 0 10px; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #16212B;"/></label>
+            </div>
+            <div style="height: 1px; background: #F2EEE4;"></div>
+            <label style="display: flex; flex-direction: column; gap: 5px;"><span style="font-size: 11px; font-weight: 500; color: #5C6670;">Resolved address</span><input value="{{ addressStr }}" readonly style="height: 36px; border: 1px solid #E3DCCD; border-radius: 8px; padding: 0 10px; font-size: 13px; color: #16212B; background: #FAF7F0;"/></label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <label style="display: flex; flex-direction: column; gap: 5px;"><span style="font-size: 11px; font-weight: 500; color: #5C6670;">City</span><input value="{{ selCity }}" onInput="{{ onCity }}" style="height: 36px; border: 1px solid #E3DCCD; border-radius: 8px; padding: 0 10px; font-size: 13px; color: #16212B;"/></label>
+              <label style="display: flex; flex-direction: column; gap: 5px;"><span style="font-size: 11px; font-weight: 500; color: #5C6670;">State / Province</span><input value="{{ selRegion }}" onInput="{{ onRegion }}" style="height: 36px; border: 1px solid #E3DCCD; border-radius: 8px; padding: 0 10px; font-size: 13px; color: #16212B;"/></label>
+              <label style="display: flex; flex-direction: column; gap: 5px;"><span style="font-size: 11px; font-weight: 500; color: #5C6670;">Postal code</span><input value="{{ selPostal }}" onInput="{{ onPostal }}" style="height: 36px; border: 1px solid #E3DCCD; border-radius: 8px; padding: 0 10px; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #16212B;"/></label>
+              <label style="display: flex; flex-direction: column; gap: 5px;"><span style="font-size: 11px; font-weight: 500; color: #5C6670;">Country</span><input value="{{ selCountry }}" onInput="{{ onCountry }}" style="height: 36px; border: 1px solid #E3DCCD; border-radius: 8px; padding: 0 10px; font-size: 13px; color: #16212B;"/></label>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- SEO TAB -->
+        <sc-if value="{{ tabIsSeo }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <label style="display: flex; flex-direction: column; gap: 5px;"><span style="font-size: 11px; font-weight: 500; color: #5C6670;">Caption / description</span><textarea onInput="{{ onCaption }}" value="{{ selCaption }}" rows="2" style="border: 1px solid #E3DCCD; border-radius: 8px; padding: 8px 10px; font-size: 13px; color: #16212B; resize: none; line-height: 1.45;">{{ selCaption }}</textarea></label>
+            <label style="display: flex; flex-direction: column; gap: 5px;"><span style="font-size: 11px; font-weight: 500; color: #5C6670;">Business name (NAP)</span><input value="{{ selBusiness }}" onInput="{{ onBusiness }}" style="height: 36px; border: 1px solid #E3DCCD; border-radius: 8px; padding: 0 10px; font-size: 13px; color: #16212B;"/></label>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <span style="font-size: 11px; font-weight: 500; color: #5C6670;">Keywords</span>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; border: 1px solid #E3DCCD; border-radius: 8px; min-height: 40px; align-content: flex-start;">
+                <sc-for list="{{ keywordChips }}" as="kw" hint-placeholder-count="3">
+                  <span style="display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 6px 0 9px; background: rgba(14,124,123,0.10); border: 1px solid rgba(14,124,123,0.22); color: #0E7C7B; border-radius: 999px; font-size: 12px; font-weight: 500;">{{ kw.label }}<button onClick="{{ kw.onRemove }}" style="background: none; border: none; cursor: pointer; color: #0E7C7B; display: flex; padding: 2px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></span>
+                </sc-for>
+                <input value="{{ keywordDraft }}" onInput="{{ onKeywordDraft }}" onKeyDown="{{ onKeywordKey }}" placeholder="Add keyword…" style="flex: 1; min-width: 90px; border: none; outline: none; background: transparent; font-size: 12.5px; color: #16212B; height: 24px;"/>
+              </div>
+              <span style="font-size: 11px; color: #5C6670;">Press Enter to add. Written to IPTC/XMP keywords.</span>
+            </div>
+            <label style="display: flex; flex-direction: column; gap: 5px;"><span style="font-size: 11px; font-weight: 500; color: #5C6670;">Sublocation / neighborhood</span><input value="{{ selSublocation }}" onInput="{{ onSublocation }}" style="height: 36px; border: 1px solid #E3DCCD; border-radius: 8px; padding: 0 10px; font-size: 13px; color: #16212B;"/></label>
+            <label style="display: flex; flex-direction: column; gap: 5px;"><span style="font-size: 11px; font-weight: 500; color: #5C6670;">Copyright</span><input value="{{ selCopyright }}" onInput="{{ onCopyright }}" style="height: 36px; border: 1px solid #E3DCCD; border-radius: 8px; padding: 0 10px; font-size: 13px; color: #16212B;"/></label>
+          </div>
+        </sc-if>
+
+        <!-- EXIF TAB -->
+        <sc-if value="{{ tabIsExif }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <label style="display: flex; flex-direction: column; gap: 5px;"><span style="font-size: 11px; font-weight: 500; color: #5C6670;">DateTimeOriginal</span><input value="{{ selDateTime }}" onInput="{{ onDateTime }}" style="height: 36px; border: 1px solid #E3DCCD; border-radius: 8px; padding: 0 10px; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #16212B;"/></label>
+            <label style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid #E3DCCD; border-radius: 8px;">
+              <span style="font-size: 12.5px; color: #16212B;">Preserve original timestamps</span>
+              <button onClick="{{ togglePreserve }}" style="{{ preserveToggleStyle }}"><span style="{{ preserveKnobStyle }}"></span></button>
+            </label>
+            <div style="border: 1px solid #E3DCCD; border-radius: 8px; overflow: hidden;">
+              <div style="padding: 9px 12px; background: #FAF7F0; font-size: 11px; font-weight: 600; color: #5C6670; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #E3DCCD;">Existing EXIF (read-only)</div>
+              <sc-for list="{{ exifRows }}" as="row" hint-placeholder-count="5">
+                <div style="display: flex; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid #F2EEE4; font-size: 12px;"><span style="color: #5C6670;">{{ row.k }}</span><span style="font-family: 'IBM Plex Mono', monospace; color: #16212B;">{{ row.v }}</span></div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="flex: none; padding: 14px 18px; border-top: 1px solid #F2EEE4; background: #FFFFFF;">
+        <button onClick="{{ stamp }}" style="width: 100%; height: 44px; border-radius: 10px; border: none; background: #FF5A3C; color: #FFFFFF; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(255,90,60,0.25);" style-hover="background:#E8482C;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          {{ stampLabel }}
+        </button>
+        <div style="display: flex; gap: 8px; margin-top: 8px;">
+          <button onClick="{{ noop }}" style="flex: 1; height: 36px; border-radius: 8px; border: 1px solid #E3DCCD; background: #FFFFFF; color: #16212B; font-size: 13px; font-weight: 500; cursor: pointer;" style-hover="background:#F2EEE4;">Reset</button>
+          <button onClick="{{ noop }}" style="flex: 1; height: 36px; border-radius: 8px; border: 1px solid #E3DCCD; background: #FFFFFF; color: #16212B; font-size: 13px; font-weight: 500; cursor: pointer;" style-hover="background:#F2EEE4;">Preview metadata</button>
+        </div>
+        <div style="display: flex; align-items: center; gap: 7px; margin-top: 12px; padding: 9px 11px; background: rgba(14,124,123,0.07); border-radius: 8px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0E7C7B" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>
+          <span style="font-size: 11px; color: #16212B; line-height: 1.4;">Processed in your browser. Originals never leave your device.</span>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- batch progress -->
+  <sc-if value="{{ processing }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; left: 50%; bottom: 80px; transform: translateX(-50%); z-index: 60; width: 460px; max-width: calc(100% - 40px); background: #FFFFFF; border: 1px solid #E3DCCD; border-radius: 14px; box-shadow: 0 8px 30px rgba(22,33,43,0.18); padding: 16px 18px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+        <div style="display: flex; align-items: center; gap: 9px;"><div style="width: 8px; height: 8px; border-radius: 999px; background: #FF5A3C; animation: pinPulse 1.4s ease-out infinite;"></div><span style="font-size: 13px; font-weight: 600; color: #16212B;">{{ progressLabel }}</span></div>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #5C6670;">{{ progressCount }}</span>
+      </div>
+      <div style="height: 8px; background: #F2EEE4; border-radius: 999px; overflow: hidden;"><div style="{{ progressBarStyle }}"></div></div>
+    </div>
+  </sc-if>
+  </sc-if>
+
+  <!-- ============ LIBRARY ============ -->
+  <sc-if value="{{ isLibrary }}" hint-placeholder-val="{{ false }}">
+  <div style="flex: 1; min-height: 0; overflow-y: auto; background: #FAF7F0;">
+    <div style="max-width: 1100px; margin: 0 auto; padding: 28px 28px 64px;">
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 22px;">
+        <div><h1 style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 26px; letter-spacing: -0.02em; margin: 0 0 4px;">Library</h1><p style="font-size: 13.5px; color: #5C6670; margin: 0;">Every batch you've stamped. Search, peek the EXIF, re-download anytime.</p></div>
+        <button onClick="{{ noop }}" style="height: 38px; padding: 0 15px; border-radius: 9px; border: 1px solid #E3DCCD; background: #fff; color: #16212B; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 7px;" style-hover="background:#F2EEE4;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>Re-download selected</button>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 24px;">
+        <div style="flex: 1; display: flex; align-items: center; gap: 9px; height: 40px; padding: 0 13px; background: #fff; border: 1px solid #E3DCCD; border-radius: 10px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5C6670" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input placeholder="Search by filename or address" style="flex: 1; border: none; outline: none; background: transparent; font-size: 13.5px; color: #16212B;"/></div>
+        <button onClick="{{ noop }}" style="height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #E3DCCD; background: #fff; color: #16212B; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 7px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M7 12h10M11 18h2"/></svg>Status</button>
+        <button onClick="{{ noop }}" style="height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #E3DCCD; background: #fff; color: #16212B; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 7px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Date</button>
+      </div>
+
+      <sc-for list="{{ libraryBatches }}" as="b" hint-placeholder-count="2">
+        <div style="margin-bottom: 28px;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+            <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 16px;">{{ b.title }}</span>
+            <span style="height: 22px; padding: 0 9px; border-radius: 999px; background: #F2EEE4; border: 1px solid #E3DCCD; font-size: 11.5px; color: #5C6670; display: flex; align-items: center; gap: 6px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5C6670" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5L9 20"/></svg>{{ b.count }}</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #5C6670;">{{ b.date }}</span>
+            <span style="margin-left: auto; font-size: 12.5px; color: #5C6670;">{{ b.address }}</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;">
+            <sc-for list="{{ b.photos }}" as="ph" hint-placeholder-count="6">
+              <div style="background: #fff; border: 1px solid #E3DCCD; border-radius: 11px; overflow: hidden; box-shadow: 0 1px 2px rgba(22,33,43,0.05);">
+                <div style="{{ ph.thumbStyle }}"><div style="position: absolute; left: 6px; bottom: 6px; width: 18px; height: 18px; border-radius: 999px; background: rgba(255,90,60,0.95); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(22,33,43,0.4);"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></div></div>
+                <div style="padding: 7px 8px 9px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ ph.name }}</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; color: #5C6670; margin-top: 3px;">{{ ph.coord }}</div></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ============ REPORTS ============ -->
+  <sc-if value="{{ isReports }}" hint-placeholder-val="{{ false }}">
+  <div style="flex: 1; min-height: 0; overflow-y: auto; background: #FAF7F0;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 28px 28px 64px; display: grid; grid-template-columns: 300px 1fr; gap: 24px; align-items: start;">
+
+      <!-- builder -->
+      <div style="background: #fff; border: 1px solid #E3DCCD; border-radius: 16px; padding: 20px; position: sticky; top: 20px;">
+        <div style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 16px; margin-bottom: 4px;">Build a geo report</div>
+        <p style="font-size: 12.5px; color: #5C6670; margin: 0 0 18px;">Client-ready proof that every photo is tagged at the right place.</p>
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <label style="display: flex; flex-direction: column; gap: 5px;"><span style="font-size: 11px; font-weight: 500; color: #5C6670;">Batch</span><div style="height: 38px; border: 1px solid #E3DCCD; border-radius: 8px; padding: 0 11px; display: flex; align-items: center; justify-content: space-between; font-size: 13px;">Olmsted &amp; Vine — May 14<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5C6670" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div></label>
+          <label style="display: flex; flex-direction: column; gap: 5px;"><span style="font-size: 11px; font-weight: 500; color: #5C6670;">Report title</span><input value="Geotag verification — Olmsted & Vine" style="height: 38px; border: 1px solid #E3DCCD; border-radius: 8px; padding: 0 11px; font-size: 13px;"/></label>
+          <label style="display: flex; flex-direction: column; gap: 5px;"><span style="font-size: 11px; font-weight: 500; color: #5C6670;">Client name</span><input value="Olmsted & Vine" style="height: 38px; border: 1px solid #E3DCCD; border-radius: 8px; padding: 0 11px; font-size: 13px;"/></label>
+          <div style="display: flex; flex-direction: column; gap: 5px;"><span style="font-size: 11px; font-weight: 500; color: #5C6670;">Logo <span style="color:#0E7C7B; font-weight:600;">· white-label</span></span><div style="height: 60px; border: 1.5px dashed #D8CFBC; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; color: #5C6670; font-size: 12.5px; background: #FAF7F0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5C6670" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 16v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2"/></svg>Drop logo</div></div>
+        </div>
+        <div style="height: 1px; background: #F2EEE4; margin: 18px 0;"></div>
+        <button onClick="{{ noop }}" style="width: 100%; height: 42px; border-radius: 10px; border: none; background: #FF5A3C; color: #fff; font-size: 13.5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;" style-hover="background:#E8482C;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>Export PDF</button>
+        <button onClick="{{ noop }}" style="width: 100%; height: 42px; border-radius: 10px; border: 1px solid #E3DCCD; background: #fff; color: #16212B; font-size: 13.5px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;" style-hover="background:#F2EEE4;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>Copy shareable link</button>
+      </div>
+
+      <!-- preview -->
+      <div style="background: #fff; border: 1px solid #E3DCCD; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 30px rgba(22,33,43,0.08);">
+        <div style="padding: 22px 26px; border-bottom: 1px solid #F2EEE4; display: flex; align-items: flex-start; justify-content: space-between;">
+          <div><div style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 20px; line-height: 1.25; letter-spacing: -0.01em;">Geotag verification — Olmsted &amp; Vine</div><div style="font-size: 12.5px; color: #5C6670; margin-top: 6px;">Generated {{ todayStr }} · 6 photos · 100% tagged</div></div>
+          <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 30px; height: 30px; border-radius: 8px; background: #16212B; display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF5A3C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></div><span style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 14px;">{{ productName }}</span></div>
+        </div>
+        <div style="position: relative; height: 240px; background: #EFEADD; border-bottom: 1px solid #F2EEE4;">
+          <svg width="100%" height="100%" viewBox="0 0 900 240" preserveAspectRatio="xMidYMid slice"><rect width="900" height="240" fill="#EFEADD"/><path d="M700 -10 C 690 80, 760 140, 740 250 L 920 250 L 920 -10 Z" fill="#CFE3DF" opacity="0.85"/><g stroke="#FFFFFF" stroke-width="9" fill="none"><path d="M-10 110 H 920"/><path d="M300 -10 V 250"/><path d="M-10 190 H 700"/><path d="M520 -10 V 250"/></g><g stroke="#E3DCCD" stroke-width="3" fill="none"><path d="M150 -10 V 250"/><path d="M-10 60 H 700"/></g></svg>
+          <div style="position: absolute; left: 34%; top: 52%; transform: translate(-50%,-100%);"><div style="width: 22px; height: 22px; border-radius: 999px 999px 999px 2px; background: #FF5A3C; transform: rotate(45deg); box-shadow: 0 3px 8px rgba(22,33,43,0.3); display: flex; align-items: center; justify-content: center;"><div style="width: 8px; height: 8px; border-radius: 999px; background: #fff;"></div></div></div>
+          <div style="position: absolute; left: 38%; top: 46%; transform: translate(-50%,-100%);"><div style="width: 18px; height: 18px; border-radius: 999px 999px 999px 2px; background: #FF5A3C; transform: rotate(45deg); opacity: 0.85; box-shadow: 0 3px 8px rgba(22,33,43,0.3);"></div></div>
+          <div style="position: absolute; left: 30%; top: 58%; transform: translate(-50%,-100%);"><div style="width: 18px; height: 18px; border-radius: 999px 999px 999px 2px; background: #FF5A3C; transform: rotate(45deg); opacity: 0.85; box-shadow: 0 3px 8px rgba(22,33,43,0.3);"></div></div>
+          <div style="position: absolute; right: 14px; top: 14px; background: rgba(46,125,82,0.95); color: #fff; border-radius: 8px; padding: 6px 11px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>All 6 within 8m accuracy</div>
+        </div>
+        <div>
+          <div style="display: grid; grid-template-columns: 44px 1.4fr 1.3fr 1.6fr 1fr; padding: 11px 26px; background: #FAF7F0; border-bottom: 1px solid #E3DCCD; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #5C6670;"><span></span><span>File</span><span>Coordinates</span><span>Address</span><span>Status</span></div>
+          <sc-for list="{{ reportRows }}" as="r" hint-placeholder-count="6">
+            <div style="display: grid; grid-template-columns: 44px 1.4fr 1.3fr 1.6fr 1fr; align-items: center; padding: 10px 26px; border-bottom: 1px solid #F2EEE4; font-size: 12.5px;">
+              <div style="{{ r.thumbStyle }}"></div>
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ r.name }}</span>
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #5C6670;">{{ r.coord }}</span>
+              <span style="color: #16212B;">{{ r.address }}</span>
+              <span><span style="display: inline-flex; align-items: center; gap: 5px; height: 21px; padding: 0 9px; border-radius: 999px; background: rgba(46,125,82,0.12); border: 1px solid rgba(46,125,82,0.22); color: #2E7D52; font-size: 11px; font-weight: 600;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2E7D52" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Tagged</span></span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ============ LANDING ============ -->
+  <sc-if value="{{ isLanding }}" hint-placeholder-val="{{ false }}">
+  <div style="flex: 1; min-height: 0; overflow-y: auto; background: #FAF7F0;">
+
+    <!-- marketing nav -->
+    <header style="position: sticky; top: 0; z-index: 30; backdrop-filter: blur(8px); background: rgba(250,247,240,0.85); border-bottom: 1px solid #E3DCCD;">
+      <div style="max-width: 1180px; margin: 0 auto; height: 64px; display: flex; align-items: center; gap: 28px; padding: 0 28px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 30px; height: 30px; border-radius: 8px; background: #16212B; display: flex; align-items: center; justify-content: center;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FF5A3C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 18px; letter-spacing: -0.02em;">{{ productName }}</span>
+        </div>
+        <nav style="display: flex; align-items: center; gap: 22px; margin-left: 8px;">
+          <a href="#features" style="font-size: 13.5px; color: #5C6670; text-decoration: none;" style-hover="color:#16212B;">Features</a>
+          <a href="#usecases" style="font-size: 13.5px; color: #5C6670; text-decoration: none;" style-hover="color:#16212B;">Use cases</a>
+          <a href="#compare" style="font-size: 13.5px; color: #5C6670; text-decoration: none;" style-hover="color:#16212B;">vs GeoImgr</a>
+          <a href="#pricing" style="font-size: 13.5px; color: #5C6670; text-decoration: none;" style-hover="color:#16212B;">Pricing</a>
+        </nav>
+        <div style="margin-left: auto; display: flex; align-items: center; gap: 14px;">
+          <button onClick="{{ goWorkspace }}" style="background: none; border: none; font-size: 13.5px; color: #16212B; cursor: pointer; font-weight: 500;">Open the app</button>
+          <a href="#" style="display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 16px; border-radius: 9px; background: #FF5A3C; color: #fff; font-size: 13.5px; font-weight: 600; text-decoration: none; box-shadow: 0 4px 12px rgba(255,90,60,0.25);" style-hover="background:#E8482C;">Get it on Gumroad</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- hero -->
+    <section style="position: relative; overflow: hidden;">
+      <svg style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.5;" preserveAspectRatio="xMidYMid slice" viewBox="0 0 1200 700"><g fill="none" stroke="#16212B" stroke-width="1" opacity="0.05"><path d="M-50 180 C 250 130, 500 240, 750 170 S 1150 100, 1300 190"/><path d="M-50 240 C 250 190, 500 300, 750 230 S 1150 160, 1300 250"/><path d="M-50 300 C 250 250, 500 360, 750 290 S 1150 220, 1300 310"/><path d="M-50 460 C 280 410, 520 520, 780 450 S 1150 390, 1300 470"/><path d="M-50 520 C 280 470, 520 580, 780 510 S 1150 450, 1300 530"/></g></svg>
+      <div style="position: relative; max-width: 1180px; margin: 0 auto; padding: 72px 28px 64px; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center;">
+        <div>
+          <div style="display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 999px; background: rgba(14,124,123,0.10); border: 1px solid rgba(14,124,123,0.22); color: #0E7C7B; font-size: 12.5px; font-weight: 600; margin-bottom: 22px;"><span style="width: 6px; height: 6px; border-radius: 999px; background: #0E7C7B;"></span>Photo geotagging for Local SEO</div>
+          <h1 style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 54px; line-height: 1.04; letter-spacing: -0.03em; color: #16212B; margin: 0 0 18px; text-wrap: balance;">Stamp the exact location into every photo.</h1>
+          <p style="font-size: 17px; line-height: 1.55; color: #5C6670; margin: 0 0 28px; max-width: 460px; text-wrap: pretty;">Search an address, drop your pin, and we write accurate GPS + local-SEO metadata into JPG, PNG, WebP and HEIC — hundreds at a time.</p>
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 22px;">
+            <a href="#" style="display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 22px; border-radius: 11px; background: #FF5A3C; color: #fff; font-size: 15px; font-weight: 600; text-decoration: none; box-shadow: 0 6px 18px rgba(255,90,60,0.28);" style-hover="background:#E8482C;">Get it on Gumroad<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            <button onClick="{{ goWorkspace }}" style="display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 20px; border-radius: 11px; background: #FFFFFF; border: 1px solid #E3DCCD; color: #16212B; font-size: 15px; font-weight: 500; cursor: pointer;" style-hover="background:#F2EEE4;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>See how it works</button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #5C6670;"><div style="display: flex; gap: 1px;"><span style="color:#E8A13C;">★★★★★</span></div><span style="font-weight: 600; color: #16212B;">4.8</span><span>· 180+ ratings · Trusted by local SEO experts</span></div>
+        </div>
+
+        <!-- hero mockup -->
+        <div style="position: relative;">
+          <div style="position: relative; background: #FFFFFF; border: 1px solid #E3DCCD; border-radius: 18px; box-shadow: 0 24px 60px rgba(22,33,43,0.16); overflow: hidden;">
+            <div style="height: 38px; display: flex; align-items: center; gap: 7px; padding: 0 14px; border-bottom: 1px solid #F2EEE4;"><span style="width: 10px; height: 10px; border-radius: 999px; background: #FF5A3C;"></span><span style="width: 10px; height: 10px; border-radius: 999px; background: #E8A13C;"></span><span style="width: 10px; height: 10px; border-radius: 999px; background: #0E7C7B;"></span><span style="margin-left: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #5C6670;">geostamp.app/workspace</span></div>
+            <div style="position: relative; height: 290px; background: #EFEADD;">
+              <svg width="100%" height="100%" viewBox="0 0 500 290" preserveAspectRatio="xMidYMid slice"><rect width="500" height="290" fill="#EFEADD"/><path d="M360 -10 C 350 90, 420 150, 400 250 L 520 250 L 520 -10 Z" fill="#CFE3DF" opacity="0.85"/><g stroke="#FFFFFF" stroke-width="9" fill="none"><path d="M-10 120 H 520"/><path d="M180 -10 V 300"/><path d="M-10 210 H 360"/></g><g stroke="#E3DCCD" stroke-width="3" fill="none"><path d="M90 -10 V 300"/><path d="M-10 70 H 360"/></g><g fill="#E3DCCD" opacity="0.6"><rect x="210" y="30" width="50" height="36" rx="3"/><rect x="280" y="30" width="44" height="48" rx="3"/><rect x="210" y="150" width="46" height="40" rx="3"/></g></svg>
+              <div style="position: absolute; left: 52%; top: 46%; transform: translate(-50%,-100%);"><div style="width: 28px; height: 28px; border-radius: 999px 999px 999px 2px; background: #FF5A3C; transform: rotate(45deg); box-shadow: 0 4px 10px rgba(22,33,43,0.3); display: flex; align-items: center; justify-content: center;"><div style="width: 10px; height: 10px; border-radius: 999px; background: #fff;"></div></div></div>
+              <div style="position: absolute; left: 12px; bottom: 12px; background: #fff; border: 1px solid #E3DCCD; border-radius: 8px; padding: 6px 10px; font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: #16212B; box-shadow: 0 4px 12px rgba(22,33,43,0.1);">37.773220° N · 122.415280° W</div>
+            </div>
+            <div style="display: flex; gap: 8px; padding: 12px 14px; border-top: 1px solid #F2EEE4; background: #fff;">
+              <div style="flex: 1; height: 46px; border-radius: 8px; background: linear-gradient(150deg,#F2B45A,#FF5A3C 70%,#7A2A1C); position: relative;"><span style="position: absolute; right: 4px; bottom: 4px; height: 16px; padding: 0 5px; border-radius: 999px; background: rgba(46,125,82,0.95); color: #fff; font-size: 9px; font-weight: 600; display: flex; align-items: center;">✓ Tagged</span></div>
+              <div style="flex: 1; height: 46px; border-radius: 8px; background: linear-gradient(150deg,#5BB6B2,#0E7C7B 60%,#16212B); position: relative;"><span style="position: absolute; right: 4px; bottom: 4px; height: 16px; padding: 0 5px; border-radius: 999px; background: rgba(46,125,82,0.95); color: #fff; font-size: 9px; font-weight: 600; display: flex; align-items: center;">✓ Tagged</span></div>
+              <div style="flex: 1; height: 46px; border-radius: 8px; background: linear-gradient(150deg,#F0C27B,#E8A13C 60%,#5C3A12); position: relative;"><span style="position: absolute; right: 4px; bottom: 4px; height: 16px; padding: 0 5px; border-radius: 999px; background: rgba(14,124,123,0.95); color: #fff; font-size: 9px; font-weight: 600; display: flex; align-items: center;">Tagging…</span></div>
+            </div>
+          </div>
+          <div style="position: absolute; -bottom: 0; right: -14px; bottom: -16px; background: #16212B; color: #fff; border-radius: 12px; padding: 12px 15px; box-shadow: 0 12px 30px rgba(22,33,43,0.25);"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #9AA6B2;">batch.zip</div><div style="font-size: 14px; font-weight: 600; margin-top: 2px;">240 photos stamped</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- trust strip -->
+    <section style="border-top: 1px solid #E3DCCD; border-bottom: 1px solid #E3DCCD; background: #FFFFFF;">
+      <div style="max-width: 1180px; margin: 0 auto; padding: 18px 28px; display: flex; align-items: center; justify-content: center; gap: 40px; flex-wrap: wrap; color: #5C6670; font-size: 13px;">
+        <span style="display: inline-flex; align-items: center; gap: 8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0E7C7B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Recommended by Local SEO experts</span>
+        <span style="display: inline-flex; align-items: center; gap: 8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0E7C7B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>1st-class support within 24h</span>
+        <span style="display: inline-flex; align-items: center; gap: 8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0E7C7B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>10+ years of geotagging know-how</span>
+      </div>
+    </section>
+
+    <!-- how it works -->
+    <section style="max-width: 1180px; margin: 0 auto; padding: 72px 28px 24px;">
+      <div style="text-align: center; margin-bottom: 44px;"><div style="font-size: 13px; font-weight: 600; color: #FF5A3C; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 10px;">How it works</div><h2 style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 36px; letter-spacing: -0.02em; margin: 0;">Three steps to stamped.</h2></div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+        <div style="background: #FFFFFF; border: 1px solid #E3DCCD; border-radius: 16px; padding: 26px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #FF5A3C; font-weight: 500;">01</div><div style="width: 44px; height: 44px; border-radius: 11px; background: rgba(255,90,60,0.10); display: flex; align-items: center; justify-content: center; margin: 14px 0 16px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF5A3C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 16v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2"/></svg></div><h3 style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 18px; margin: 0 0 7px;">Drop your photos</h3><p style="font-size: 14px; line-height: 1.5; color: #5C6670; margin: 0;">Drag in a whole shoot. JPG, PNG, WebP, HEIC — hundreds at once.</p></div>
+        <div style="background: #FFFFFF; border: 1px solid #E3DCCD; border-radius: 16px; padding: 26px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #FF5A3C; font-weight: 500;">02</div><div style="width: 44px; height: 44px; border-radius: 11px; background: rgba(255,90,60,0.10); display: flex; align-items: center; justify-content: center; margin: 14px 0 16px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF5A3C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></div><h3 style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 18px; margin: 0 0 7px;">Pin the spot</h3><p style="font-size: 14px; line-height: 1.5; color: #5C6670; margin: 0;">Google Places search or drag the pin to the exact address.</p></div>
+        <div style="background: #FFFFFF; border: 1px solid #E3DCCD; border-radius: 16px; padding: 26px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #FF5A3C; font-weight: 500;">03</div><div style="width: 44px; height: 44px; border-radius: 11px; background: rgba(255,90,60,0.10); display: flex; align-items: center; justify-content: center; margin: 14px 0 16px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF5A3C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/></svg></div><h3 style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 18px; margin: 0 0 7px;">Download stamped</h3><p style="font-size: 14px; line-height: 1.5; color: #5C6670; margin: 0;">GPS + keywords written in. Single files or a ZIP.</p></div>
+      </div>
+    </section>
+
+    <!-- feature grid -->
+    <section id="features" style="max-width: 1180px; margin: 0 auto; padding: 56px 28px;">
+      <div style="margin-bottom: 32px;"><div style="font-size: 13px; font-weight: 600; color: #FF5A3C; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 10px;">Features</div><h2 style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 36px; letter-spacing: -0.02em; margin: 0; max-width: 620px; text-wrap: balance;">Everything GeoImgr does — plus the parts that make SEO actually land.</h2></div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+        <sc-for list="{{ features }}" as="f" hint-placeholder-count="6">
+          <div style="background: #FFFFFF; border: 1px solid #E3DCCD; border-radius: 14px; padding: 22px;"><div style="{{ f.iconWrap }}">{{ f.icon }}</div><h3 style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 16px; margin: 14px 0 6px;">{{ f.title }}</h3><p style="font-size: 13.5px; line-height: 1.5; color: #5C6670; margin: 0;">{{ f.body }}</p></div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- comparison -->
+    <section id="compare" style="background: #16212B; color: #F3EEE2;">
+      <div style="max-width: 1180px; margin: 0 auto; padding: 64px 28px;">
+        <div style="text-align: center; margin-bottom: 36px;"><h2 style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 34px; letter-spacing: -0.02em; margin: 0 0 8px;">GeoStamp vs GeoImgr</h2><p style="font-size: 14.5px; color: #9AA6B2; margin: 0;">An honest comparison. We match the essentials and lead on workflow.</p></div>
+        <div style="max-width: 760px; margin: 0 auto; background: rgba(255,255,255,0.04); border: 1px solid #2C3A47; border-radius: 16px; overflow: hidden;">
+          <div style="display: grid; grid-template-columns: 1.6fr 1fr 1fr; padding: 14px 22px; border-bottom: 1px solid #2C3A47; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #9AA6B2;"><span></span><span style="text-align: center; color: #FF6A4D; font-weight: 600;">GeoStamp</span><span style="text-align: center;">GeoImgr Pro</span></div>
+          <sc-for list="{{ compareRows }}" as="r" hint-placeholder-count="6">
+            <div style="display: grid; grid-template-columns: 1.6fr 1fr 1fr; align-items: center; padding: 13px 22px; border-bottom: 1px solid rgba(44,58,71,0.6); font-size: 14px;"><span style="color: #F3EEE2;">{{ r.label }}</span><span style="text-align: center;">{{ r.us }}</span><span style="text-align: center; color: #9AA6B2;">{{ r.them }}</span></div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <!-- use cases -->
+    <section id="usecases" style="max-width: 1180px; margin: 0 auto; padding: 64px 28px 40px;">
+      <div style="margin-bottom: 28px;"><div style="font-size: 13px; font-weight: 600; color: #FF5A3C; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 10px;">Use cases</div><h2 style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 34px; letter-spacing: -0.02em; margin: 0;">Built for people who tag a lot of photos.</h2></div>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;">
+        <sc-for list="{{ useCases }}" as="u" hint-placeholder-count="4">
+          <div style="background: #FFFFFF; border: 1px solid #E3DCCD; border-radius: 14px; padding: 20px;"><div style="{{ u.iconWrap }}">{{ u.icon }}</div><h3 style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; margin: 12px 0 6px;">{{ u.title }}</h3><p style="font-size: 13px; line-height: 1.5; color: #5C6670; margin: 0;">{{ u.body }}</p></div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- pricing -->
+    <section id="pricing" style="max-width: 1180px; margin: 0 auto; padding: 40px 28px 64px;">
+      <div style="text-align: center; margin-bottom: 40px;"><div style="font-size: 13px; font-weight: 600; color: #FF5A3C; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 10px;">Pricing</div><h2 style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 36px; letter-spacing: -0.02em; margin: 0 0 8px;">One-time on Gumroad. Yours to keep.</h2><p style="font-size: 14.5px; color: #5C6670; margin: 0;">Activate instantly with the license key from your receipt.</p></div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: stretch;">
+        <sc-for list="{{ plans }}" as="p" hint-placeholder-count="3">
+          <div style="{{ p.cardStyle }}">
+            <sc-if value="{{ p.highlighted }}" hint-placeholder-val="{{ false }}"><div style="position: absolute; top: 16px; right: 16px; height: 24px; padding: 0 10px; border-radius: 999px; background: #FF5A3C; color: #fff; font-size: 11px; font-weight: 600; display: flex; align-items: center;">Most popular</div></sc-if>
+            <div style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 18px;">{{ p.name }}</div>
+            <div style="margin: 12px 0 4px; display: flex; align-items: baseline; gap: 4px;"><span style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 40px; letter-spacing: -0.02em;">{{ p.price }}</span><span style="font-size: 14px; color: #5C6670;">{{ p.period }}</span></div>
+            <div style="font-size: 13px; color: #5C6670; margin-bottom: 18px;">{{ p.photos }} photos / month · {{ p.seats }}</div>
+            <a href="#" style="{{ p.ctaStyle }}">{{ p.cta }}</a>
+            <div style="height: 1px; background: #E3DCCD; margin: 20px 0;"></div>
+            <div style="display: flex; flex-direction: column; gap: 11px;">
+              <sc-for list="{{ p.features }}" as="ft" hint-placeholder-count="4">
+                <div style="display: flex; align-items: flex-start; gap: 9px; font-size: 13.5px; color: #16212B;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E7D52" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex: none; margin-top: 1px;"><path d="M20 6 9 17l-5-5"/></svg>{{ ft }}</div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: center; gap: 18px; flex-wrap: wrap; margin-top: 22px; font-size: 13px; color: #5C6670;">
+        <span style="display: inline-flex; align-items: center; gap: 7px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0E7C7B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Valid EU VAT ID? VAT is reverse-charged — you pay no VAT.</span>
+        <span style="display: inline-flex; align-items: center; gap: 7px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0E7C7B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>License key delivered instantly · multi-seat sharing</span>
+      </div>
+    </section>
+
+    <!-- final CTA -->
+    <section style="max-width: 1180px; margin: 0 auto; padding: 0 28px 72px;">
+      <div style="position: relative; overflow: hidden; background: linear-gradient(135deg, #FF5A3C, #E8482C); border-radius: 24px; padding: 56px 48px; text-align: center; color: #fff;">
+        <svg style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.18;" preserveAspectRatio="xMidYMid slice" viewBox="0 0 1000 400"><g fill="none" stroke="#fff" stroke-width="1.5"><path d="M-50 120 C 250 70, 500 180, 750 110 S 1050 60, 1100 130"/><path d="M-50 200 C 250 150, 500 260, 750 190 S 1050 140, 1100 210"/><path d="M-50 280 C 250 230, 500 340, 750 270 S 1050 220, 1100 290"/></g></svg>
+        <h2 style="position: relative; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 40px; letter-spacing: -0.02em; margin: 0 0 14px; text-wrap: balance;">Stamp your first batch in the next five minutes.</h2>
+        <p style="position: relative; font-size: 16px; opacity: 0.92; margin: 0 0 28px; max-width: 520px; margin-left: auto; margin-right: auto;">In-browser processing. Originals never leave your device. Cancel anytime.</p>
+        <div style="position: relative; display: flex; align-items: center; justify-content: center; gap: 12px;"><a href="#" style="display: inline-flex; align-items: center; gap: 8px; height: 50px; padding: 0 26px; border-radius: 12px; background: #16212B; color: #fff; font-size: 15px; font-weight: 600; text-decoration: none;" style-hover="background:#0d161e;">Get it on Gumroad</a><button onClick="{{ goWorkspace }}" style="height: 50px; padding: 0 24px; border-radius: 12px; background: rgba(255,255,255,0.18); border: none; color: #fff; font-size: 15px; font-weight: 500; cursor: pointer;" style-hover="background:rgba(255,255,255,0.28);">Try the workspace</button></div>
+      </div>
+    </section>
+
+    <!-- footer -->
+    <footer style="border-top: 1px solid #E3DCCD; background: #FFFFFF;">
+      <div style="max-width: 1180px; margin: 0 auto; padding: 40px 28px; display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; flex-wrap: wrap;">
+        <div style="max-width: 280px;"><div style="display: flex; align-items: center; gap: 9px; margin-bottom: 12px;"><div style="width: 26px; height: 26px; border-radius: 7px; background: #16212B; display: flex; align-items: center; justify-content: center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FF5A3C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></div><span style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 16px;">{{ productName }}</span></div><p style="font-size: 13px; line-height: 1.55; color: #5C6670; margin: 0;">Geotag your photos for Local SEO in seconds. Built by people who've done it for a decade.</p></div>
+        <div style="display: flex; gap: 56px; flex-wrap: wrap;">
+          <div><div style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #5C6670; margin-bottom: 12px;">Product</div><div style="display: flex; flex-direction: column; gap: 9px; font-size: 13.5px;"><a href="#features" style="color: #16212B; text-decoration: none;">Features</a><a href="#pricing" style="color: #16212B; text-decoration: none;">Pricing</a><a href="#compare" style="color: #16212B; text-decoration: none;">vs GeoImgr</a></div></div>
+          <div><div style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #5C6670; margin-bottom: 12px;">Legal</div><div style="display: flex; flex-direction: column; gap: 9px; font-size: 13.5px;"><a href="#" style="color: #16212B; text-decoration: none;">Terms</a><a href="#" style="color: #16212B; text-decoration: none;">Privacy</a><a href="#" style="color: #16212B; text-decoration: none;">Impressum</a></div></div>
+          <div><div style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #5C6670; margin-bottom: 12px;">Support</div><div style="display: flex; flex-direction: column; gap: 9px; font-size: 13.5px;"><a href="#" style="color: #16212B; text-decoration: none;">support@geostamp.app</a><span style="color: #5C6670;">Within 24 hours</span></div></div>
+        </div>
+      </div>
+      <div style="border-top: 1px solid #F2EEE4;"><div style="max-width: 1180px; margin: 0 auto; padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; color: #5C6670;"><span>© 2026 {{ productName }}. EU VAT reverse-charge supported. Invoices auto-generated.</span><span style="font-family: 'IBM Plex Mono', monospace;">Made for Gumroad</span></div></div>
+    </footer>
+  </div>
+  </sc-if>
+
+  <!-- ============ TOAST ============ -->
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="{{ toastStyle }}">
+      <span style="{{ toastIconWrap }}">{{ toastIcon }}</span>
+      <span style="font-size: 13px; font-weight: 500;">{{ toastMsg }}</span>
+      <sc-if value="{{ showDownload }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ noop }}" style="margin-left: 8px; height: 30px; padding: 0 12px; border-radius: 8px; border: none; background: #FF5A3C; color: #fff; font-size: 12.5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>Download all (ZIP)</button>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <!-- ============ LICENSE MODAL ============ -->
+  <sc-if value="{{ licenseOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeLicense }}" style="position: fixed; inset: 0; z-index: 80; background: rgba(22,33,43,0.45); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; padding: 20px;">
+      <div onClick="{{ stop }}" style="width: 440px; max-width: 100%; background: #FFFFFF; border-radius: 16px; box-shadow: 0 8px 30px rgba(22,33,43,0.25); overflow: hidden;">
+        <div style="padding: 22px 24px 0; display: flex; align-items: flex-start; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 11px;">
+            <div style="width: 40px; height: 40px; border-radius: 11px; background: rgba(14,124,123,0.10); display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0E7C7B" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.5 12.5 8-8M16 4l3 3M18 6l2 2"/></svg></div>
+            <div><div style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 17px;">Enter your license key</div><div style="font-size: 12.5px; color: #5C6670; margin-top: 1px;">From your Gumroad receipt email.</div></div>
+          </div>
+          <button onClick="{{ closeLicense }}" style="background: none; border: none; cursor: pointer; color: #5C6670; padding: 4px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div style="padding: 18px 24px 24px;">
+          <div style="{{ keyFieldStyle }}">
+            <input value="{{ licenseKey }}" onInput="{{ onLicenseInput }}" placeholder="XXXX-XXXX-XXXX-XXXX" style="flex: 1; border: none; outline: none; background: transparent; font-family: 'IBM Plex Mono', monospace; font-size: 15px; letter-spacing: 0.06em; color: #16212B;"/>
+            <sc-if value="{{ licenseValid }}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2E7D52" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></sc-if>
+            <sc-if value="{{ licenseInvalid }}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D2402F" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></sc-if>
+          </div>
+          <div style="{{ licenseHintStyle }}">{{ licenseHint }}</div>
+          <button onClick="{{ activateLicense }}" style="{{ activateBtnStyle }}">{{ activateLabel }}</button>
+          <div style="text-align: center; margin-top: 12px; font-size: 12px; color: #5C6670;">No key yet? <a href="#" style="color: #FF5A3C; font-weight: 500; text-decoration: none;">Get GeoStamp on Gumroad →</a></div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ FLOATING PROTOTYPE SWITCHER ============ -->
+  <div style="position: fixed; right: 16px; bottom: 16px; z-index: 70; display: flex; align-items: center; gap: 3px; background: #16212B; border-radius: 999px; padding: 4px; box-shadow: 0 8px 30px rgba(22,33,43,0.30);">
+    <button onClick="{{ goLanding }}" style="{{ switchLandingStyle }}">Landing</button>
+    <button onClick="{{ goWorkspace }}" style="{{ switchAppStyle }}">App</button>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:800},&quot;productName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;GeoStamp&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;usageThisMonth&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:240,&quot;min&quot;:0,&quot;max&quot;:1000,&quot;tsType&quot;:&quot;number&quot;}}">
+class Component extends DCLogic {
+  state = {
+    screen: 'workspace',
+    photos: [
+      { id:'p1', name:'storefront-front.jpg', status:'tagged', hasLocation:true, px:56, py:44, grad:'linear-gradient(150deg,#F2B45A,#FF5A3C 70%,#7A2A1C)', caption:'Front entrance and signage at golden hour', business:'Olmsted & Vine', keywords:['restaurant','san francisco','mission district','outdoor dining'], sublocation:'Mission District', copyright:'© Olmsted & Vine 2026', altitude:'12', heading:'135', dateTime:'2026:05:14 18:42:09' },
+      { id:'p2', name:'patio-evening.heic', status:'untagged', hasLocation:false, px:40, py:58, grad:'linear-gradient(150deg,#5BB6B2,#0E7C7B 60%,#16212B)', caption:'', business:'Olmsted & Vine', keywords:['patio'], sublocation:'', copyright:'', altitude:'12', heading:'', dateTime:'2026:05:14 19:10:55' },
+      { id:'p3', name:'dining-room-01.jpg', status:'untagged', hasLocation:false, px:62, py:50, grad:'linear-gradient(150deg,#F0C27B,#E8A13C 60%,#5C3A12)', caption:'', business:'Olmsted & Vine', keywords:[], sublocation:'', copyright:'', altitude:'', heading:'', dateTime:'2026:05:14 19:22:31' },
+      { id:'p4', name:'bar-area.webp', status:'untagged', hasLocation:false, px:48, py:38, grad:'linear-gradient(150deg,#4A6A86,#16212B 70%,#0a1016)', caption:'', business:'Olmsted & Vine', keywords:[], sublocation:'', copyright:'', altitude:'', heading:'', dateTime:'2026:05:14 19:31:02' },
+      { id:'p5', name:'exterior-signage.png', status:'tagged', hasLocation:true, px:56, py:44, grad:'linear-gradient(150deg,#FF7A4D,#E8482C 65%,#16212B)', caption:'Neon sign detail', business:'Olmsted & Vine', keywords:['signage','neon','local business'], sublocation:'Mission District', copyright:'© Olmsted & Vine 2026', altitude:'12', heading:'90', dateTime:'2026:05:14 20:02:44' },
+      { id:'p6', name:'kitchen-pass.jpg', status:'untagged', hasLocation:false, px:52, py:54, grad:'linear-gradient(150deg,#9AA6B2,#5C6670 65%,#16212B)', caption:'', business:'Olmsted & Vine', keywords:[], sublocation:'', copyright:'', altitude:'', heading:'', dateTime:'2026:05:14 20:15:18' },
+    ],
+    selectedId:'p1',
+    checked:{ p2:true, p3:true, p4:true, p6:true },
+    tab:'location',
+    searchQuery:'', searchOpen:false,
+    processing:false, done:0, showDownload:false,
+    toast:null,
+    licenseOpen:false, licenseKey:'', preserve:true,
+    keywordDraft:'',
+    dragging:false,
+  };
+
+  componentDidMount() {
+    this._move = (e) => {
+      if (!this.state.dragging || !this.mapRef) return;
+      const r = this.mapRef.getBoundingClientRect();
+      let x = ((e.clientX - r.left) / r.width) * 100;
+      let y = ((e.clientY - r.top) / r.height) * 100;
+      x = Math.max(4, Math.min(96, x));
+      y = Math.max(7, Math.min(93, y));
+      this.setPin(x, y);
+    };
+    this._up = () => { if (this.state.dragging) this.setState({ dragging:false }); };
+    window.addEventListener('pointermove', this._move);
+    window.addEventListener('pointerup', this._up);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('pointermove', this._move);
+    window.removeEventListener('pointerup', this._up);
+    if (this._timer) clearInterval(this._timer);
+    if (this._toastT) clearTimeout(this._toastT);
+  }
+
+  setMapRef = (el) => { this.mapRef = el; };
+
+  sel() { return this.state.photos.find(p => p.id === this.state.selectedId) || this.state.photos[0]; }
+
+  geoFromXY(x, y) {
+    const lat = 37.7689 + (50 - y) * 0.00072;
+    const lng = -122.4214 + (x - 50) * 0.00102;
+    const streets = ['Valencia St','Guerrero St','Mission St','Folsom St','Harrison St','Bryant St'];
+    const num = 400 + Math.round(x * 11) - Math.round(y * 2);
+    const street = streets[Math.abs(Math.round(y / 16)) % streets.length];
+    const postal = '9411' + (Math.abs(Math.round(x / 20)) % 8);
+    return { lat, lng, address:`${num} ${street}`, city:'San Francisco', region:'CA', postal, country:'United States' };
+  }
+  fmtLat(n) { return (Math.abs(n)).toFixed(6) + '° ' + (n >= 0 ? 'N' : 'S'); }
+  fmtLng(n) { return (Math.abs(n)).toFixed(6) + '° ' + (n >= 0 ? 'E' : 'W'); }
+
+  setPin(x, y) {
+    const g = this.geoFromXY(x, y);
+    this.setState(s => ({
+      photos: s.photos.map(p => p.id === s.selectedId
+        ? { ...p, px:x, py:y, hasLocation:true, _lat:g.lat, _lng:g.lng, city:g.city, region:g.region, postal:g.postal, country:g.country, address:g.address }
+        : p)
+    }));
+  }
+
+  toast(type, msg) {
+    this.setState({ toast:{ type, msg } });
+    if (this._toastT) clearTimeout(this._toastT);
+    this._toastT = setTimeout(() => this.setState(s => (s.showDownload ? {} : { toast:null })), 2800);
+  }
+
+  select = (id) => this.setState({ selectedId:id });
+  toggle = (id) => this.setState(s => ({ checked:{ ...s.checked, [id]: !s.checked[id] } }));
+  selectAll = () => this.setState(s => { const c={}; s.photos.forEach(p=>c[p.id]=true); return { checked:c }; });
+  clearAll = () => this.toast('info','Tray cleared (demo) — drop photos to reload');
+  noop = () => {};
+  stop = (e) => e && e.stopPropagation();
+
+  applyAll = () => { const g=this.geoFromXY(this.state.pinX ?? this.sel().px, 0); this._apply(() => true); this.toast('success','Location applied to all photos'); };
+  applyChecked = () => { this._apply(p => this.state.checked[p.id]); this.toast('success','Location applied to selected photos'); };
+  _apply(pred) {
+    const cur = this.sel();
+    const g = this.geoFromXY(cur.px, cur.py);
+    this.setState(s => ({ photos: s.photos.map(p => pred(p)
+      ? { ...p, px:cur.px, py:cur.py, hasLocation:true, city:g.city, region:g.region, postal:g.postal, country:g.country, address:g.address }
+      : p) }));
+  }
+
+  startDrag = (e) => { e.preventDefault(); this.setState({ dragging:true }); };
+  recenter = () => { this.setPin(56, 44); };
+
+  onSearch = (e) => { const v=e.target.value; this.setState({ searchQuery:v, searchOpen:v.length>0 }); };
+  onSearchFocus = () => { if (this.state.searchQuery.length>0) this.setState({ searchOpen:true }); };
+  pickSuggestion = (s) => { this.setState({ searchQuery:s.title, searchOpen:false }); this.setPin(s.px, s.py); this.toast('info','Pin moved to '+s.title); };
+
+  tab = (t) => this.setState({ tab:t });
+
+  updateSel(patch) { this.setState(s => ({ photos: s.photos.map(p => p.id===s.selectedId ? { ...p, ...patch } : p) })); }
+  onCaption = (e) => this.updateSel({ caption:e.target.value });
+  onBusiness = (e) => this.updateSel({ business:e.target.value });
+  onSublocation = (e) => this.updateSel({ sublocation:e.target.value });
+  onCopyright = (e) => this.updateSel({ copyright:e.target.value });
+  onCity = (e) => this.updateSel({ city:e.target.value });
+  onRegion = (e) => this.updateSel({ region:e.target.value });
+  onPostal = (e) => this.updateSel({ postal:e.target.value });
+  onCountry = (e) => this.updateSel({ country:e.target.value });
+  onAltitude = (e) => this.updateSel({ altitude:e.target.value });
+  onHeading = (e) => this.updateSel({ heading:e.target.value });
+  onDateTime = (e) => this.updateSel({ dateTime:e.target.value });
+  togglePreserve = () => this.setState(s => ({ preserve: !s.preserve }));
+
+  onKeywordDraft = (e) => this.setState({ keywordDraft:e.target.value });
+  onKeywordKey = (e) => {
+    if (e.key === 'Enter' && this.state.keywordDraft.trim()) {
+      const kw = this.state.keywordDraft.trim();
+      this.updateSel({ keywords:[...this.sel().keywords, kw] });
+      this.setState({ keywordDraft:'' });
+    } else if (e.key === 'Backspace' && !this.state.keywordDraft) {
+      const ks = this.sel().keywords;
+      if (ks.length) this.updateSel({ keywords:ks.slice(0,-1) });
+    }
+  };
+  removeKeyword = (i) => { const ks=[...this.sel().keywords]; ks.splice(i,1); this.updateSel({ keywords:ks }); };
+
+  stamp = () => {
+    if (this.state.processing) return;
+    const total = this.state.photos.length;
+    this.setState({ processing:true, done:0, showDownload:false, toast:null });
+    let i = 0;
+    this._timer = setInterval(() => {
+      i++;
+      this.setState(s => ({ done:i, photos: s.photos.map((p,idx) => idx < i ? { ...p, status:'tagged', hasLocation:true } : (idx===i ? { ...p, status:'processing' } : p)) }));
+      if (i >= total) {
+        clearInterval(this._timer);
+        setTimeout(() => {
+          this.setState(s => ({ processing:false, showDownload:true, toast:{ type:'success', msg:'Stamped and ready to download' }, photos: s.photos.map(p => ({ ...p, status:'tagged', hasLocation:true })) }));
+        }, 400);
+      }
+    }, 520);
+  };
+
+  openLicense = () => this.setState({ licenseOpen:true });
+  closeLicense = () => this.setState({ licenseOpen:false });
+  onLicenseInput = (e) => {
+    let v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,16);
+    v = v.match(/.{1,4}/g)?.join('-') || '';
+    this.setState({ licenseKey:v });
+  };
+  licenseStatus() {
+    const k = this.state.licenseKey;
+    if (k.length === 0) return 'idle';
+    if (k.replace(/-/g,'').length < 16) return 'idle';
+    return /^GEOS-/.test(k) ? 'valid' : 'invalid';
+  }
+  activateLicense = () => {
+    if (this.licenseStatus() === 'valid') { this.setState({ licenseOpen:false }); this.toast('success','License activated — Pro unlocked'); }
+    else this.toast('error','That key doesn\u2019t look right. Check your receipt.');
+  };
+
+  go = (screen) => this.setState({ screen });
+  goWorkspace = () => this.go('workspace');
+  goLibrary = () => this.go('library');
+  goReports = () => this.go('reports');
+  goLanding = () => this.go('landing');
+
+  // ---- style helpers ----
+  navStyle(active) {
+    return { display:'flex', alignItems:'center', gap:'7px', height:'34px', padding:'0 12px', borderRadius:'8px', border:'none', cursor:'pointer', fontSize:'13px', fontWeight:active?600:500,
+      background: active?'#F2EEE4':'transparent', color: active?'#16212B':'#5C6670' };
+  }
+  tabStyle(active) {
+    return { flex:1, height:'30px', borderRadius:'7px', border:'none', cursor:'pointer', fontSize:'12.5px', fontWeight:active?600:500,
+      background: active?'#FFFFFF':'transparent', color: active?'#16212B':'#5C6670', boxShadow: active?'0 1px 2px rgba(22,33,43,0.10)':'none' };
+  }
+  switchStyle(active) {
+    return { height:'30px', padding:'0 16px', borderRadius:'999px', border:'none', cursor:'pointer', fontSize:'12.5px', fontWeight:600,
+      background: active?'#FF5A3C':'transparent', color: active?'#FFFFFF':'#9AA6B2' };
+  }
+  badgeFor(status) {
+    const map = {
+      tagged:{ c:'#2E7D52', bg:'rgba(46,125,82,0.12)', b:'rgba(46,125,82,0.22)', label:'Tagged' },
+      untagged:{ c:'#5C6670', bg:'#F2EEE4', b:'#E3DCCD', label:'Untagged' },
+      processing:{ c:'#0E7C7B', bg:'rgba(14,124,123,0.12)', b:'rgba(14,124,123,0.22)', label:'Processing' },
+      error:{ c:'#D2402F', bg:'rgba(210,64,47,0.12)', b:'rgba(210,64,47,0.22)', label:'Error' },
+    };
+    return map[status] || map.untagged;
+  }
+
+  mkIcon(parts, color) {
+    return React.createElement('svg', { width:20, height:20, viewBox:'0 0 24 24', fill:'none', stroke: color||'#FF5A3C', strokeWidth:1.8, strokeLinecap:'round', strokeLinejoin:'round' },
+      parts.map((p,i) => React.createElement(p[0], { key:i, ...p[1] })));
+  }
+  mkCheck() {
+    return React.createElement('svg', { width:18, height:18, viewBox:'0 0 24 24', fill:'none', stroke:'#5FD08A', strokeWidth:2.6, strokeLinecap:'round', strokeLinejoin:'round' },
+      React.createElement('path', { d:'M20 6 9 17l-5-5' }));
+  }
+
+  renderVals() {
+    const s = this.state;
+    const sel = this.sel();
+    const g = this.geoFromXY(sel.px, sel.py);
+    const checkedCount = Object.values(s.checked).filter(Boolean).length;
+    const taggedCount = s.photos.filter(p => p.status==='tagged').length;
+
+    const photoCards = s.photos.map(p => {
+      const b = this.badgeFor(p.status);
+      const isSel = p.id === s.selectedId;
+      const isChecked = !!s.checked[p.id];
+      return {
+        name:p.name, statusLabel:b.label, checked:isChecked, hasLocation:p.hasLocation,
+        onSelect:() => this.select(p.id),
+        onToggle:(e) => { e.stopPropagation(); this.toggle(p.id); },
+        cardStyle:{ position:'relative', borderRadius:'10px', overflow:'hidden', cursor:'pointer', background:'#FFFFFF', border: isSel?'2px solid #FF5A3C':'1px solid #E3DCCD', boxShadow: isSel?'0 4px 12px rgba(255,90,60,0.18)':'0 1px 2px rgba(22,33,43,0.05)' },
+        thumbStyle:{ position:'relative', height:'74px', background:p.grad },
+        checkStyle:{ position:'absolute', left:'6px', top:'6px', width:'18px', height:'18px', borderRadius:'5px', border: isChecked?'none':'1.5px solid rgba(255,255,255,0.9)', background: isChecked?'#FF5A3C':'rgba(22,33,43,0.25)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' },
+        badgeStyle:{ display:'inline-flex', alignItems:'center', gap:'5px', marginTop:'5px', height:'19px', padding:'0 7px', borderRadius:'999px', fontSize:'10.5px', fontWeight:600, color:b.c, background:b.bg, border:'1px solid '+b.b },
+        dotStyle:{ width:'5px', height:'5px', borderRadius:'999px', background:b.c },
+      };
+    });
+
+    const suggestions = [
+      { title:'Olmsted & Vine', sub:'512 Valencia St, San Francisco, CA 94110', px:56, py:44 },
+      { title:'Dolores Park', sub:'Dolores St & 19th St, San Francisco, CA', px:30, py:62 },
+      { title:'Ferry Building Marketplace', sub:'1 Ferry Building, San Francisco, CA', px:78, py:24 },
+      { title:'Mission Cultural Center', sub:'2868 Mission St, San Francisco, CA', px:46, py:70 },
+    ].filter(x => !s.searchQuery || x.title.toLowerCase().includes(s.searchQuery.toLowerCase()) || x.sub.toLowerCase().includes(s.searchQuery.toLowerCase()))
+     .map(x => ({ ...x, onPick:() => this.pickSuggestion(x) }));
+
+    const keywordChips = sel.keywords.map((k,i) => ({ label:k, onRemove:(e)=>{ e&&e.stopPropagation(); this.removeKeyword(i); } }));
+
+    const exifRows = [
+      { k:'Make', v:'Apple' }, { k:'Model', v:'iPhone 15 Pro' }, { k:'LensModel', v:'26mm ƒ/1.78' },
+      { k:'ISO', v:'400' }, { k:'Exposure', v:'1/120 s' }, { k:'Dimensions', v:'4032 × 3024' },
+    ];
+
+    const usageLimit = 1000;
+    const usageUsed = (this.props.usageThisMonth ?? 240) + taggedCount * 0;
+    const usagePct = Math.min(100, (usageUsed / usageLimit) * 100);
+
+    const lstatus = this.licenseStatus();
+    const toast = s.toast;
+    const toastColors = { success:'#2E7D52', error:'#D2402F', info:'#16212B' };
+
+    // ---- landing data ----
+    const fWrap = { width:'40px', height:'40px', borderRadius:'11px', background:'rgba(255,90,60,0.10)', display:'flex', alignItems:'center', justifyContent:'center' };
+    const features = [
+      { title:'Google Places search', body:'Autocomplete any address or business. Selecting drops the pin and reverse-geocodes instantly.', icon:this.mkIcon([['circle',{cx:11,cy:11,r:7}],['path',{d:'m21 21-4.3-4.3'}]]) },
+      { title:'Bulk concurrent tagging', body:'Tag a whole shoot at once with a live per-file progress meter — no page reloads.', icon:this.mkIcon([['path',{d:'M3 12h4l3 8 4-16 3 8h4'}]]) },
+      { title:'Per-photo & CSV mapping', body:'Different addresses for different photos. Upload a CSV to bulk-assign in one pass.', icon:this.mkIcon([['path',{d:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z'}],['path',{d:'M14 2v6h6M8 13h8M8 17h5'}]]) },
+      { title:'Local-SEO metadata', body:'Not just GPS — IPTC/XMP keywords, caption, business NAP, city, state and sublocation.', icon:this.mkIcon([['path',{d:'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2'}],['path',{d:'M9 3h6v4H9z'}],['path',{d:'M9 12h6M9 16h4'}]]) },
+      { title:'Privacy-first processing', body:'Photos are stamped in your browser by default. Originals never leave your device.', icon:this.mkIcon([['path',{d:'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z'}],['path',{d:'m9 12 2 2 4-4'}]]) },
+      { title:'Geo verification reports', body:'A client-ready map + EXIF table proving every photo is tagged at the right spot.', icon:this.mkIcon([['path',{d:'M9 18 3 20V6l6-2 6 2 6-2v14l-6 2-6-2Z'}],['path',{d:'M9 4v14M15 6v14'}]]) },
+    ].map(f => ({ ...f, iconWrap:fWrap }));
+
+    const uWrap = { width:'38px', height:'38px', borderRadius:'10px', background:'rgba(14,124,123,0.10)', display:'flex', alignItems:'center', justifyContent:'center' };
+    const useCases = [
+      { title:'Local SEO agencies', body:'Tag client photos at the exact business location at scale — and prove it.', icon:this.mkIcon([['path',{d:'M3 21h18M5 21V7l8-4v18M19 21V11l-6-4'}],['path',{d:'M9 9v0M9 13v0M9 17v0'}]],'#0E7C7B') },
+      { title:'Real estate', body:'Batch-tag entire shoots by address in minutes. Keep originals safe.', icon:this.mkIcon([['path',{d:'m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z'}],['path',{d:'M9 22V12h6v10'}]],'#0E7C7B') },
+      { title:'Restaurants & retail', body:'Make Google Business Profile photos location-relevant, no tech skills needed.', icon:this.mkIcon([['path',{d:'M3 2v7c0 1.1.9 2 2 2h0a2 2 0 0 0 2-2V2M5 2v9M9 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2Z'}]],'#0E7C7B') },
+      { title:'Field service', body:'Repeatable, fast workflow with clear metadata control on every job site.', icon:this.mkIcon([['path',{d:'M14.7 6.3a4 4 0 0 0-5.6 5.6L3 18v3h3l6.1-6.1a4 4 0 0 0 5.6-5.6l-2.5 2.5-2-2 2.5-2.5Z'}]],'#0E7C7B') },
+    ].map(u => ({ ...u, iconWrap:uWrap }));
+
+    const dash = React.createElement('span', { style:{ color:'#5C6670' } }, '\u2014');
+    const compareRows = [
+      { label:'Google Places address search', us:this.mkCheck(), them:this.mkCheck() },
+      { label:'JPG / PNG / WebP', us:this.mkCheck(), them:this.mkCheck() },
+      { label:'HEIC ingest', us:this.mkCheck(), them:dash },
+      { label:'No-reload map workspace', us:this.mkCheck(), them:dash },
+      { label:'CSV per-photo address mapping', us:this.mkCheck(), them:dash },
+      { label:'Local-SEO metadata (keywords, NAP)', us:this.mkCheck(), them:dash },
+      { label:'In-browser privacy processing', us:this.mkCheck(), them:dash },
+      { label:'Client geo reports', us:this.mkCheck(), them:dash },
+      { label:'EU VAT reverse-charge invoices', us:this.mkCheck(), them:this.mkCheck() },
+    ];
+
+    const planCta = (hi) => ({ display:'flex', alignItems:'center', justifyContent:'center', height:'44px', borderRadius:'10px', textDecoration:'none', fontSize:'14px', fontWeight:600,
+      background: hi?'#FF5A3C':'#16212B', color:'#fff' });
+    const plans = [
+      { name:'Starter', price:'$39', period:'one-time', photos:'100', seats:'1 seat', cta:'Get on Gumroad', highlighted:false, features:['All formats incl. HEIC','Map + Places search','Auto invoices + EU VAT'] },
+      { name:'Pro', price:'$89', period:'one-time', photos:'1,000', seats:'1+ seats', cta:'Get on Gumroad', highlighted:true, features:['Everything in Starter','CSV bulk-assign','Geo verification reports','Priority 24h support'] },
+      { name:'Agency', price:'$249', period:'one-time', photos:'5,000', seats:'5+ seats', cta:'Get on Gumroad', highlighted:false, features:['Everything in Pro','Team seat management','White-label reports','Shared license key'] },
+    ].map(p => ({ ...p,
+      cardStyle:{ position:'relative', background:'#FFFFFF', border: p.highlighted?'2px solid #FF5A3C':'1px solid #E3DCCD', borderRadius:'18px', padding:'28px', boxShadow: p.highlighted?'0 16px 40px rgba(255,90,60,0.14)':'0 1px 2px rgba(22,33,43,0.05)' },
+      ctaStyle:planCta(p.highlighted) }));
+
+    // ---- library + reports data ----
+    const grads = ['linear-gradient(150deg,#F2B45A,#FF5A3C 70%,#7A2A1C)','linear-gradient(150deg,#5BB6B2,#0E7C7B 60%,#16212B)','linear-gradient(150deg,#F0C27B,#E8A13C 60%,#5C3A12)','linear-gradient(150deg,#4A6A86,#16212B 70%,#0a1016)','linear-gradient(150deg,#FF7A4D,#E8482C 65%,#16212B)','linear-gradient(150deg,#9AA6B2,#5C6670 65%,#16212B)'];
+    const thumb = (g,h) => ({ position:'relative', height:(h||64)+'px', background:g });
+    const mkPhotos = (names, coords) => names.map((n,i) => ({ name:n, coord:coords[i], thumbStyle:thumb(grads[i % grads.length], 64) }));
+    const libraryBatches = [
+      { title:'Olmsted & Vine', count:'6 photos', date:'2026-05-14', address:'512 Valencia St, San Francisco, CA',
+        photos:mkPhotos(['storefront-front.jpg','patio-evening.heic','dining-room-01.jpg','bar-area.webp','exterior-signage.png','kitchen-pass.jpg'],['37.7589, -122.4214','37.7588, -122.4216','37.7590, -122.4213','37.7587, -122.4218','37.7589, -122.4214','37.7588, -122.4215']) },
+      { title:'Bayview Realty — 14 listings', count:'48 photos', date:'2026-05-09', address:'Multiple addresses · CSV-assigned',
+        photos:mkPhotos(['1428-mariposa-01.jpg','1428-mariposa-02.jpg','67-prospect-front.jpg','67-prospect-yard.jpg','902-hampshire-01.jpg','902-hampshire-kit.jpg'],['37.7634, -122.4011','37.7634, -122.4012','37.7521, -122.4097','37.7520, -122.4099','37.7559, -122.4083','37.7558, -122.4085']) },
+    ];
+
+    const reportRows = [
+      { name:'storefront-front.jpg', coord:'37.75890° N, 122.42140° W', address:'512 Valencia St, San Francisco' },
+      { name:'patio-evening.heic', coord:'37.75882° N, 122.42162° W', address:'512 Valencia St, San Francisco' },
+      { name:'dining-room-01.jpg', coord:'37.75901° N, 122.42131° W', address:'512 Valencia St, San Francisco' },
+      { name:'bar-area.webp', coord:'37.75874° N, 122.42180° W', address:'512 Valencia St, San Francisco' },
+      { name:'exterior-signage.png', coord:'37.75889° N, 122.42144° W', address:'512 Valencia St, San Francisco' },
+      { name:'kitchen-pass.jpg', coord:'37.75885° N, 122.42155° W', address:'512 Valencia St, San Francisco' },
+    ].map((r,i) => ({ ...r, thumbStyle:{ width:'30px', height:'30px', borderRadius:'6px', background:grads[i % grads.length] } }));
+
+    return {
+      productName: this.props.productName ?? 'GeoStamp',
+      isApp: s.screen==='workspace' || s.screen==='library' || s.screen==='reports',
+      isWorkspace: s.screen==='workspace',
+      isLibrary: s.screen==='library',
+      isReports: s.screen==='reports',
+      isLanding: s.screen==='landing',
+      features, useCases, compareRows, plans, libraryBatches, reportRows,
+      todayStr:'May 15, 2026',
+
+      navWorkspaceStyle:this.navStyle(s.screen==='workspace'),
+      navLibraryStyle:this.navStyle(s.screen==='library'),
+      navReportsStyle:this.navStyle(s.screen==='reports'),
+      switchLandingStyle:this.switchStyle(s.screen==='landing'),
+      switchAppStyle:this.switchStyle(s.screen!=='landing'),
+
+      goWorkspace:this.goWorkspace, goLibrary:this.goLibrary, goReports:this.goReports, goLanding:this.goLanding,
+
+      usageLabel: usageUsed.toLocaleString()+' / '+usageLimit.toLocaleString(),
+      usageBarStyle:{ height:'100%', width:usagePct+'%', background: usagePct>85?'#C9871F':'#0E7C7B', borderRadius:'999px' },
+
+      photoCount: s.photos.length+' loaded',
+      photoCards,
+      clearAll:this.clearAll, selectAll:this.selectAll, applyAll:this.applyAll, applyChecked:this.applyChecked,
+      openCsv:() => this.toast('info','CSV bulk-assign (demo)'),
+      noop:this.noop, stop:this.stop,
+
+      setMapRef:this.setMapRef,
+      searchQuery:s.searchQuery, onSearch:this.onSearch, onSearchFocus:this.onSearchFocus, searchOpen:s.searchOpen, suggestions,
+      recenter:this.recenter, startDrag:this.startDrag,
+      pinStyle:{ position:'absolute', left:sel.px+'%', top:sel.py+'%', transform:'translate(-50%,-100%)', zIndex:15, cursor: s.dragging?'grabbing':'grab', animation:'pinDrop 0.4s cubic-bezier(0.22,1,0.36,1)' },
+
+      latStr:this.fmtLat(g.lat), lngStr:this.fmtLng(g.lng), addressStr:`${g.address}, ${sel.city||g.city}, ${sel.region||g.region} ${sel.postal||g.postal}`,
+      checkedCount,
+
+      selName:sel.name,
+      selSubLabel: sel.hasLocation ? 'Geotagged · editing' : 'No location · editing',
+      selThumbStyle:{ width:'34px', height:'34px', borderRadius:'8px', flex:'none', background:sel.grad, border:'1px solid #E3DCCD' },
+
+      tabLocation:() => this.tab('location'), tabSeo:() => this.tab('seo'), tabExif:() => this.tab('exif'),
+      tabLocationStyle:this.tabStyle(s.tab==='location'), tabSeoStyle:this.tabStyle(s.tab==='seo'), tabExifStyle:this.tabStyle(s.tab==='exif'),
+      tabIsLocation:s.tab==='location', tabIsSeo:s.tab==='seo', tabIsExif:s.tab==='exif',
+
+      selAltitude:sel.altitude, selHeading:sel.heading, selCity:sel.city||g.city, selRegion:sel.region||g.region, selPostal:sel.postal||g.postal, selCountry:sel.country||g.country,
+      onAltitude:this.onAltitude, onHeading:this.onHeading, onCity:this.onCity, onRegion:this.onRegion, onPostal:this.onPostal, onCountry:this.onCountry,
+
+      selCaption:sel.caption, selBusiness:sel.business, selSublocation:sel.sublocation, selCopyright:sel.copyright,
+      onCaption:this.onCaption, onBusiness:this.onBusiness, onSublocation:this.onSublocation, onCopyright:this.onCopyright,
+      keywordChips, keywordDraft:s.keywordDraft, onKeywordDraft:this.onKeywordDraft, onKeywordKey:this.onKeywordKey,
+
+      selDateTime:sel.dateTime, onDateTime:this.onDateTime,
+      preserveToggleStyle:{ width:'38px', height:'22px', borderRadius:'999px', border:'none', cursor:'pointer', position:'relative', background: s.preserve?'#0E7C7B':'#D8CFBC', transition:'background 0.2s' },
+      preserveKnobStyle:{ position:'absolute', top:'2px', left: s.preserve?'18px':'2px', width:'18px', height:'18px', borderRadius:'999px', background:'#fff', transition:'left 0.2s', boxShadow:'0 1px 2px rgba(0,0,0,0.2)' },
+      togglePreserve:this.togglePreserve,
+      exifRows,
+
+      stamp:this.stamp,
+      stampLabel: s.processing ? 'Stamping…' : 'Stamp & process '+s.photos.length+' photos',
+
+      processing:s.processing,
+      progressLabel:'Stamping photos',
+      progressCount: s.done+' / '+s.photos.length,
+      progressBarStyle:{ height:'100%', width:((s.done/s.photos.length)*100)+'%', background:'#FF5A3C', borderRadius:'999px', transition:'width 0.3s ease' },
+
+      toast: !!toast,
+      toastMsg: toast?.msg || '',
+      toastIcon: toast ? (toast.type==='success' ? '✓' : toast.type==='error' ? '!' : 'i') : '',
+      showDownload: s.showDownload,
+      toastStyle:{ position:'fixed', left:'50%', bottom:'24px', transform:'translateX(-50%)', zIndex:75, display:'flex', alignItems:'center', gap:'10px', background:'#FFFFFF', border:'1px solid #E3DCCD', borderRadius:'12px', boxShadow:'0 8px 30px rgba(22,33,43,0.18)', padding:'12px 16px', color:'#16212B', animation:'toastIn 0.28s cubic-bezier(0.22,1,0.36,1)' },
+      toastIconWrap:{ width:'22px', height:'22px', borderRadius:'999px', flex:'none', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:'13px', background: toast?(toastColors[toast.type]||'#16212B'):'#16212B' },
+
+      licenseOpen:s.licenseOpen, openLicense:this.openLicense, closeLicense:this.closeLicense,
+      licenseKey:s.licenseKey, onLicenseInput:this.onLicenseInput,
+      licenseValid: lstatus==='valid', licenseInvalid: lstatus==='invalid',
+      keyFieldStyle:{ display:'flex', alignItems:'center', gap:'10px', height:'50px', padding:'0 14px', borderRadius:'10px', background:'#FAF7F0', border:'1.5px solid '+(lstatus==='valid'?'#2E7D52':lstatus==='invalid'?'#D2402F':'#E3DCCD') },
+      licenseHint: lstatus==='valid'?'Key looks valid — Pro, 3 seats.':lstatus==='invalid'?'Unrecognized key format.':'Paste the key from your receipt. Try GEOS-…',
+      licenseHintStyle:{ marginTop:'8px', fontSize:'11.5px', color: lstatus==='valid'?'#2E7D52':lstatus==='invalid'?'#D2402F':'#5C6670' },
+      activateLicense:this.activateLicense,
+      activateLabel:'Activate',
+      activateBtnStyle:{ marginTop:'14px', width:'100%', height:'44px', borderRadius:'10px', border:'none', cursor:'pointer', fontSize:'14px', fontWeight:600, color:'#fff', background: lstatus==='valid'?'#FF5A3C':'#C9B89E' },
+    };
+  }
+}
+</script>
+</body>
+</html>
