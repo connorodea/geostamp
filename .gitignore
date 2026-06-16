@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Builds
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# Rust / Tauri
+target/
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/gen/
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+*.local
+
+# Brainstorm scratch (visual companion mockups)
+.superpowers/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.log

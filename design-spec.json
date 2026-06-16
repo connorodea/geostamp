@@ -1,0 +1,397 @@
+{
+  "$schema": "design-build-spec/v1",
+  "meta": {
+    "productName": "GeoStamp",
+    "productNameNote": "Placeholder — swap freely. Alternatives: Pinpoint, MapStamp, Latitag, GeoMark.",
+    "tagline": "Geotag your photos for Local SEO in seconds.",
+    "oneLiner": "Drop in photos, pin a location on the map, and we write accurate GPS + local-SEO metadata into every image — hundreds at a time.",
+    "category": "Photo geotagging SaaS (web app)",
+    "competitorBenchmark": "GeoImgr Pro",
+    "platform": "Responsive web app (desktop-first workspace, mobile-capable marketing + light editing)",
+    "primaryGoal": "Beat GeoImgr on UX clarity, batch speed, and Local-SEO usefulness while matching its feature set.",
+    "lockedDecisions": {
+      "workspaceLayout": "C · Two-column studio (left column: photos stacked over metadata editor; right column: large map)",
+      "aesthetic": "APIDistributed canonical identity — editorial charcoal + orange-red, dark-first"
+    }
+  },
+
+  "positioning": {
+    "differentiators": [
+      "Cleaner, faster map workspace — search, drag-pin, and reverse-geocode in one panel with no page reloads.",
+      "Per-photo location overrides + CSV bulk-assign (map different addresses to different photos in one batch).",
+      "Local-SEO metadata, not just GPS: writes IPTC/XMP keywords, caption, city/state/country, sublocation, and business name (NAP) alongside EXIF GPS.",
+      "Privacy-forward: processing happens in-browser by default; originals never leave the device unless the user opts in.",
+      "Built-in Geo Report: a verifiable map + EXIF table proving every photo is correctly tagged (great for SEO deliverables/clients).",
+      "Modern formats: JPG, PNG, WebP, plus HEIC ingest.",
+      "Transparent metered pricing with a live usage meter instead of opaque limits."
+    ],
+    "competitiveParity": [
+      "Google Maps + Places autocomplete address search",
+      "JPG / PNG / WebP support",
+      "Concurrent multi-photo upload + geotag",
+      "Up to 1000 photos / user / month tiers",
+      "License-key activation, multi-seat sharing",
+      "Self-serve invoices with EU VAT ID (reverse-charge, no VAT for valid EU VAT IDs)",
+      "Cancel anytime subscription"
+    ]
+  },
+
+  "targetUsers": [
+    { "persona": "Local SEO consultant / agency", "need": "Tag client photos with exact business location + geo keywords at scale; produce proof for clients." },
+    { "persona": "Small business owner (restaurant, contractor, realtor)", "need": "Make Google Business Profile / website photos location-relevant without technical skills." },
+    { "persona": "Real-estate / field-service photographer", "need": "Batch-tag shoots by address quickly, keep originals safe." },
+    { "persona": "Developer / marketer", "need": "Repeatable, fast workflow; clear metadata control." }
+  ],
+
+  "designSystem": {
+    "identity": "APIDistributed canonical — Premium Editorial (charcoal + orange-red, NEXUM/Hexaon style). Dark-first and cinematic with big confident geometric type, ONE warm orange-red accent, generous space, faint bordered grid + film grain, frosted-glass panels, pill+circular-arrow CTAs, parenthetical uppercase eyebrows. Serious infrastructure with edge — never AI-slop.",
+    "appliesTo": "Use verbatim across every screen, dashboard, nav, footer, logo, email.",
+    "themes": {
+      "default": "dark-first",
+      "rhythm": "Marketing alternates dark hero → light content → dark CTA (Vercel/Linear cadence). Workspace stays dark-first (charcoal chrome) with a DARK-styled map so the map integrates instead of glaring.",
+      "supportDarkMode": true
+    },
+    "colors": {
+      "accent": "#FF4D1C",
+      "accentHover": "#FF673D",
+      "accentAmber": "#FF8A2B",
+      "accentRed": "#FF3D2E",
+      "accentGradient": "linear-gradient(135deg,#FF8A2B,#FF4D1C 52%,#FF3D2E)",
+      "accentGlow": "rgba(255,77,28,0.34)",
+      "onAccent": "#FFFFFF",
+      "dark": {
+        "base": "#17171A",
+        "panel": "#1F1F24",
+        "panelAlt": "#1B1B1F",
+        "panelDeep": "#0E0E10",
+        "textStrong": "#F4F3EF",
+        "text": "#D2D2D8",
+        "textMuted": "#B4B4BC",
+        "textFaint": "#84848E",
+        "textGhost": "#5C5C64",
+        "hairline": "rgba(255,245,238,0.11)",
+        "glassSurface": "rgba(255,245,238,0.06)"
+      },
+      "light": {
+        "bg": "#F4F3EF",
+        "bgSoft": "#ECEBE5",
+        "card": "#FFFFFF",
+        "border": "#E2E0D9",
+        "borderSoft": "#EDEBE5",
+        "ink": "#15161A",
+        "body": "#6B6B73",
+        "muted": "#9A9AA2"
+      },
+      "status": {
+        "live": "#46C77E",
+        "danger": "#F25C54",
+        "warning": "#F2C94C"
+      },
+      "semanticMapping": {
+        "primaryCta": "accent (white text)",
+        "activeMapPin": "accent",
+        "tagStatus": { "untagged": "dark.textFaint", "tagged": "status.live", "processing": "accentAmber", "error": "status.danger" },
+        "coordinatesAndExifValues": "JetBrains Mono in accent or dark.textStrong",
+        "eyebrowParens": "accent"
+      },
+      "codeSyntax": { "blue": "#84B6F4", "green": "#9FD86B", "purple": "#C792EA", "comment": "#6A7382", "callHighlight": "#FF4D1C", "note": "Only for terminal/curl snippets — conventional code semantics, not brand color." }
+    },
+    "typography": {
+      "display": { "family": "Archivo", "weights": [700, 800, 900], "use": "Headlines / page titles", "tracking": "-0.04em", "note": "Huge and very tight. Confident." },
+      "sans": { "family": "Hanken Grotesk", "weights": [400, 500, 600, 700], "use": "Body, UI, labels" },
+      "mono": { "family": "JetBrains Mono", "weights": [400, 500], "use": "Coordinates, EXIF values, license keys, file names, base URLs, console/meters" },
+      "eyebrow": { "family": "Hanken Grotesk", "transform": "uppercase", "tracking": "0.16em", "format": "( PARENTHETICAL )", "parensColor": "accent", "size": [11, 12] },
+      "rejected": ["Space Grotesk (reads as AI)", "serif display"],
+      "scale": { "xs": 12, "sm": 14, "base": 16, "lg": 18, "xl": 22, "2xl": 28, "3xl": 38, "4xl": 52, "5xl": 72 }
+    },
+    "logo": {
+      "mark": "Orange-gradient rounded-square tile (9px radius) containing a dark forward-chevron '›' + a dark dot — connotes distribute / forward. Reskinned here as a chevron-over-pin for the geotagging product (optional).",
+      "wordmark": "Set in Archivo 700, with a small ™.",
+      "appIcon": "Dark rounded-square tile with the mark; must read at 16px."
+    },
+    "spacing": { "unit": 4, "scale": [0, 4, 8, 12, 16, 24, 32, 48, 64, 96, 128], "containerMax": 1280, "workspaceMax": "full-bleed" },
+    "radii": { "sm": 6, "md": 10, "card": 14, "lg": 16, "pill": 999, "logoTile": 9 },
+    "shadows": {
+      "card": "0 1px 2px rgba(0,0,0,0.18), 0 8px 30px rgba(0,0,0,0.22)",
+      "panel": "0 12px 40px rgba(0,0,0,0.35)",
+      "pin": "0 4px 12px rgba(0,0,0,0.45)",
+      "glow": "0 0 60px rgba(255,77,28,0.34)"
+    },
+    "surfaceTreatments": ["Faint film-grain / noise overlay on dark sections", "6-column vertical grid rule overlay on dark sections", "Faint GIANT background wordmark behind hero", "Frosted-glass (backdrop-blur) panels over dark", "Soft radial accent glow behind focal points"],
+    "components": {
+      "pillArrow": { "spec": ".pill-arrow — fully-rounded pill with a leading circular-arrow icon that rotates -45deg on hover", "variants": ["--accent (orange, white text)", "--light (white on dark)", "--dark (dark on light)", "--ghost (outline)"] },
+      "cards": "Rounded 12–16px, thin hairline borders, soft shadow; on dark use translucent glass surfaces.",
+      "nav": "Charcoal; logo left, uppercase tracked links center, white pill-arrow CTA right; transparent over dark hero, solidifies on scroll. NO scroll-collapse wordmark animation."
+    },
+    "motion": {
+      "easing": "easeInOut ~0.5–0.7s",
+      "principles": ["Staggered fade+rise entrance reveals", "Subtle hover lift on cards/buttons", "Map pin drops with a small bounce", "Slow grain/glow drift", "Batch progress animates per-file", "Respect prefers-reduced-motion", "No gimmicks, never clone another brand's signature motion"]
+    },
+    "do": ["dark-first", "one warm orange-red accent", "bold geometric sans (Archivo)", "high contrast", "lots of space", "grain + glass + grid for depth", "pill+arrow CTAs", "parenthetical uppercase eyebrows", "mono for all technical values"],
+    "dont": ["serif display", "purple-on-white AI gradients", "multiple competing accents", "thin/timid type", "Anthropic-style wordmark-collapse", "lime/teal"]
+  },
+
+  "globalLayout": {
+    "appShell": {
+      "topBar": {
+        "style": "Charcoal (dark.base), hairline bottom border, faint grain.",
+        "left": ["logo mark + wordmark"],
+        "center": ["primaryNav: ( WORKSPACE ) ( LIBRARY ) ( REPORTS ) — uppercase tracked"],
+        "right": ["usageMeter (X / limit this month)", "Enter license key (white pill-arrow)", "accountMenu (avatar)"]
+      },
+      "licenseKeyAffordance": "Top-right 'Enter license key' pill-arrow button (mirrors GeoImgr) opening a modal with a JetBrains-Mono key field + instant validation state.",
+      "notes": "Workspace is full-bleed dark. Account / Billing / Reports use a centered 1280px container that may switch to a light content surface per the dark→light rhythm."
+    },
+    "marketingShell": {
+      "topNav": ["logo", "( FEATURES )", "( USE CASES )", "( PRICING )", "Login", "Start free (accent pill-arrow)"],
+      "footer": ["product links", "Local SEO use-cases", "legal", "EU VAT/invoice note", "support email", "compare-vs-GeoImgr link", "faint giant wordmark"]
+    }
+  },
+
+  "navigation": {
+    "appPrimary": [
+      { "label": "Workspace", "route": "/app", "icon": "crosshair", "description": "The geotagging editor (default)" },
+      { "label": "Library", "route": "/app/library", "icon": "image", "description": "History of processed photos and batches" },
+      { "label": "Reports", "route": "/app/reports", "icon": "map", "description": "Geo verification reports for clients" }
+    ],
+    "accountMenu": ["Account", "Billing & invoices", "License & seats", "Settings", "Support", "Log out"]
+  },
+
+  "screens": [
+    {
+      "id": "marketing-home",
+      "type": "marketing",
+      "route": "/",
+      "purpose": "Convert visitors; out-position GeoImgr on clarity and Local-SEO value.",
+      "rhythm": "Dark hero → light how-it-works/features → dark CTA.",
+      "sections": [
+        { "id": "hero", "surface": "dark", "layout": "left copy + right live map-with-photo mockup", "content": { "eyebrow": "( PHOTO GEOTAGGING FOR LOCAL SEO )", "headline": "Stamp the exact location into every photo.", "headlineAccentWord": "location.", "sub": "Search an address, drop your pin, and we write accurate GPS + local-SEO metadata into JPG, PNG, WebP and HEIC — hundreds at a time.", "primaryCta": "Start free", "secondaryCta": "See how it works", "trustline": "Trusted by local SEO experts • 10+ years of geotagging know-how" } },
+        { "id": "ratings", "surface": "dark", "content": { "rating": "180+ ratings", "stars": 4.8, "badges": ["Recommended by Local SEO experts", "1st-class support within 24h"] } },
+        { "id": "how-it-works", "surface": "light", "layout": "3-step horizontal with column rules", "steps": [ { "n": 1, "title": "Drop your photos", "body": "Drag in a whole shoot. JPG, PNG, WebP, HEIC." }, { "n": 2, "title": "Pin the spot", "body": "Google Places search or drag the pin to the exact address." }, { "n": 3, "title": "Download stamped", "body": "GPS + keywords written in. Download single files or a ZIP." } ] },
+        { "id": "feature-grid", "surface": "light", "layout": "2x3 monochrome card tiles", "features": ["Google Places search", "Bulk concurrent tagging", "Per-photo & CSV address mapping", "Local-SEO metadata (keywords, NAP, city/state)", "Privacy-first in-browser processing", "Geo verification reports"] },
+        { "id": "use-cases", "surface": "dark", "tabs": ["Local SEO agencies", "Real estate", "Restaurants & retail", "Field service"] },
+        { "id": "comparison", "surface": "light", "title": "GeoStamp vs GeoImgr", "type": "feature-comparison-table", "note": "Honest table; emphasize batch UX, CSV mapping, SEO metadata, privacy, reports." },
+        { "id": "pricing-preview", "surface": "light", "ctaTo": "/pricing" },
+        { "id": "faq", "surface": "light" },
+        { "id": "final-cta", "surface": "dark", "withAccentGlow": true }
+      ]
+    },
+    {
+      "id": "pricing",
+      "type": "marketing",
+      "route": "/pricing",
+      "purpose": "Match GeoImgr's subscription + multi-user model with clearer tiers.",
+      "components": [
+        { "id": "billing-toggle", "options": ["Monthly", "Yearly (save ~2 months)"] },
+        { "id": "seat-selector", "label": "Number of users", "control": "stepper/dropdown 1–25", "note": "License key shared with the ordered number of seats (mirrors GeoImgr)." },
+        { "id": "plan-cards", "tiers": [
+          { "name": "Starter", "photosPerMonth": 100, "seats": 1, "price": "$x/mo", "features": ["All formats", "Map + Places search", "Invoices"] },
+          { "name": "Pro", "highlighted": true, "photosPerMonth": 1000, "seats": "1+", "features": ["Everything in Starter", "CSV bulk-assign", "Geo reports", "Priority 24h support"] },
+          { "name": "Agency", "photosPerMonth": 5000, "seats": "5+", "features": ["Everything in Pro", "Team seats", "White-label reports"] }
+        ] },
+        { "id": "vat-note", "text": "EU customers: enter a valid EU VAT ID at checkout — VAT is reverse-charged (no VAT). Invoices generated automatically." },
+        { "id": "guarantee", "text": "Cancel anytime. License key delivered instantly." }
+      ]
+    },
+
+    {
+      "id": "auth",
+      "type": "auth",
+      "routes": ["/login", "/signup", "/reset"],
+      "layout": "Split screen — left form on charcoal panel, right cartographic illustration on dark with sample accent pins + grain.",
+      "fields": { "signup": ["email", "password"], "login": ["email", "password"], "social": ["Google (optional)"] },
+      "postSignup": "Drop straight into an empty Workspace with a guided first-run overlay."
+    },
+
+    {
+      "id": "workspace",
+      "type": "app",
+      "route": "/app",
+      "purpose": "THE core screen. Upload, locate, edit metadata, batch-process, download. This is where we beat GeoImgr.",
+      "layoutModel": "Two-column studio (LOCKED): full-bleed dark. LEFT column ~40% stacks a Photos panel over the Metadata editor; RIGHT column ~60% is a large DARK-styled map. Bottom-docked batch progress. Columns are independently scrollable; left column is collapsible to give the map more room.",
+      "mapStyle": "Dark map theme (Google Maps dark style or Mapbox dark) so it integrates with the charcoal chrome; accent-orange pin stands out.",
+      "regions": {
+        "leftColumnTop_Photos": {
+          "purpose": "Holds the working batch of photos.",
+          "surface": "Glass panel on dark",
+          "components": [
+            { "type": "dropzone", "states": ["idle", "dragOver", "uploading", "hasItems"], "accepts": ["image/jpeg", "image/png", "image/webp", "image/heic"], "multiple": true, "copy": { "idle": "Drag photos here or browse — JPG, PNG, WebP, HEIC" }, "treatment": "Dashed hairline border, faint grid texture, accent glow on dragOver" },
+            { "type": "formatChips", "items": ["JPG", "PNG", "WebP", "HEIC"] },
+            { "type": "batchToolbar", "actions": ["Select all", "Clear", "Apply location to selected", "Apply to all"] },
+            { "type": "photoCardGrid", "card": { "shows": ["thumbnail", "filename (mono, truncated)", "statusBadge", "hasLocationPin?", "selectCheckbox"], "statusBadge": ["Untagged", "Tagged", "Processing", "Error"], "interactions": ["click selects + focuses pin on map", "hover quick-actions: locate / remove / view EXIF"] } },
+            { "type": "csvAssignButton", "label": "Bulk-assign by CSV", "opensModal": "csv-mapping" }
+          ]
+        },
+        "leftColumnBottom_Inspector": {
+          "purpose": "Edit the exact metadata written into the photo(s). Sits beneath the Photos panel.",
+          "surface": "Glass panel on dark",
+          "tabs": ["( LOCATION )", "( SEO METADATA )", "( EXIF DETAILS )"],
+          "fields": {
+            "location": ["latitude (mono)", "longitude (mono)", "altitude (optional)", "GPSImgDirection / heading (optional)", "resolved address (city, state, country, postal)"],
+            "seoMetadata": ["caption / description", "keywords (tag-chip input)", "business name (NAP)", "sublocation / neighborhood", "city", "state/province", "country", "copyright"],
+            "exifDetails": ["DateTimeOriginal (editable)", "preserve original timestamps toggle", "read-only existing EXIF preview"]
+          },
+          "footer": { "primaryCta": "Stamp & process (accent pill-arrow)", "secondary": ["Reset", "Preview metadata"] },
+          "multiSelectBehavior": "When multiple photos selected, fields show a 'Mixed' state and apply to all selected on save."
+        },
+        "rightColumn_Map": {
+          "purpose": "Find and set the exact location.",
+          "components": [
+            { "type": "placesSearch", "behavior": "Google Places autocomplete; selecting a result drops/moves the pin and reverse-geocodes the address.", "placeholder": "Search an address or place…", "style": "Floating glass pill at top of map" },
+            { "type": "map", "provider": "Google Maps (Leaflet/Mapbox as swappable fallback)", "theme": "dark", "controls": ["zoom", "satellite/street toggle", "recenter", "coordinate overlay"] },
+            { "type": "draggablePin", "behavior": "Drag to fine-tune; coordinates + reverse-geocoded address update live.", "color": "accent" },
+            { "type": "coordinateReadout", "style": "JetBrains-Mono chip, glass, bottom-left", "shows": ["lat", "lng", "resolved address"] },
+            { "type": "applyBar", "actions": ["Apply to selected photos", "Apply to all", "Set as default for new uploads"] }
+          ]
+        }
+      },
+      "overlays": {
+        "batchProgress": { "type": "bottom-docked glass progress panel", "shows": ["per-file progress", "concurrent count", "succeeded / failed counts", "cancel"], "onComplete": "Success toast + 'Download all (ZIP)' accent pill-arrow CTA" },
+        "firstRun": { "type": "3-step coachmarks", "targets": ["dropzone", "placesSearch", "stamp button"] }
+      },
+      "downloadOptions": ["Download single", "Download all (ZIP)", "Keep originals (write copies)", "Overwrite in place"],
+      "privacyNote": "Inline reassurance: 'Your photos are processed in your browser. Originals never leave your device unless you choose cloud sync.'"
+    },
+
+    {
+      "id": "csv-mapping-modal",
+      "type": "app-modal",
+      "purpose": "Assign different addresses to different photos in one batch.",
+      "flow": ["Upload CSV (filename,address OR filename,lat,lng)", "Auto-match rows to loaded photos", "Show match table with confidence + unmatched warnings", "Confirm → pins assigned per photo"],
+      "components": ["fileDrop", "columnMapper", "matchTable", "validationSummary"]
+    },
+
+    {
+      "id": "library",
+      "type": "app",
+      "route": "/app/library",
+      "purpose": "Browse past batches and re-download.",
+      "layout": "Filter bar + responsive grid grouped by batch/date.",
+      "components": ["searchByFilenameOrAddress", "filters (date, status, location)", "batchGroups", "photoCard (map thumbnail + EXIF peek)", "bulkRedownload"]
+    },
+
+    {
+      "id": "reports",
+      "type": "app",
+      "route": "/app/reports",
+      "purpose": "Client-ready proof that photos are correctly geotagged (differentiator).",
+      "components": [
+        { "type": "reportBuilder", "inputs": ["select batch", "title", "client name", "logo (white-label on Agency)"] },
+        { "type": "mapWithAllPins", "shows": "every photo plotted at its tagged location" },
+        { "type": "exifTable", "columns": ["thumbnail", "filename", "lat", "lng", "address", "keywords", "timestamp", "status"] },
+        { "type": "exportButtons", "formats": ["PDF", "shareable link"] }
+      ]
+    },
+
+    {
+      "id": "billing",
+      "type": "app",
+      "route": "/app/billing",
+      "purpose": "Subscription, invoices, VAT, usage.",
+      "components": [
+        { "type": "currentPlanCard", "shows": ["plan", "seats", "renewal date", "Change plan", "Cancel"] },
+        { "type": "usageMeter", "shows": "photos tagged this month vs limit; resets date", "style": "mono numerals, accent fill, warns near cap" },
+        { "type": "paymentMethod" },
+        { "type": "taxDetails", "fields": ["company name", "country", "EU VAT ID (live validation + reverse-charge note)"] },
+        { "type": "invoiceList", "columns": ["date", "number", "amount", "VAT", "download PDF"] }
+      ]
+    },
+
+    {
+      "id": "license-seats",
+      "type": "app",
+      "route": "/app/license",
+      "purpose": "Mirror GeoImgr's license-key + multi-user sharing.",
+      "components": [
+        { "type": "licenseKeyDisplay", "style": "JetBrains Mono, copy button, masked toggle" },
+        { "type": "seatManager", "shows": ["seats included", "seats used", "invite by email or share key"] },
+        { "type": "activationHelp", "text": "Enter this key in the top-right of the tool to activate." }
+      ]
+    },
+
+    {
+      "id": "settings",
+      "type": "app",
+      "route": "/app/settings",
+      "components": ["profile", "default metadata template (preset NAP/keywords)", "default map location", "processing prefs (in-browser vs cloud, keep originals)", "theme"]
+    }
+  ],
+
+  "components": [
+    { "id": "Button", "variants": ["accent pill-arrow", "light pill-arrow", "dark pill-arrow", "ghost pill"], "sizes": ["sm", "md", "lg"], "states": ["default", "hover (arrow rotates -45deg + lift)", "active", "loading", "disabled"] },
+    { "id": "StatusBadge", "variants": ["untagged", "tagged", "processing", "error"], "shape": "pill", "rule": "Always pair color with an icon + label (never color alone)" },
+    { "id": "PhotoCard", "spec": "thumbnail + mono filename + status badge + select + hover quick actions; glass surface on dark" },
+    { "id": "Dropzone", "spec": "dashed hairline on glass, faint grid texture, accent-glow drag-over" },
+    { "id": "MapPin", "spec": "accent teardrop with strong shadow; draggable; pulse on active" },
+    { "id": "CoordinateChip", "spec": "JetBrains Mono, glass bg, accent or strong text" },
+    { "id": "TagInput", "spec": "keyword chips for SEO keywords" },
+    { "id": "UsageMeter", "spec": "linear meter + 'X / limit' mono label; accent fill; warns near cap" },
+    { "id": "ProgressPanel", "spec": "bottom-docked glass, per-file rows, aggregate bar" },
+    { "id": "LicenseKeyModal", "spec": "mono input, instant valid/invalid state, success animation" },
+    { "id": "Eyebrow", "spec": "( UPPERCASE TRACKED ) Hanken Grotesk, parens in accent" },
+    { "id": "Toast", "variants": ["success", "error", "info"] },
+    { "id": "Modal", "sizes": ["sm", "md", "lg"], "spec": "charcoal/glass surface, panel shadow" },
+    { "id": "DataTable", "spec": "used in invoices, reports, csv match; hairline rules" }
+  ],
+
+  "flows": [
+    { "id": "happy-path-single-location", "steps": ["Drop photos", "Search address → pin drops", "(optional) tweak SEO metadata", "Apply to all", "Stamp & process", "Download ZIP"] },
+    { "id": "per-photo-locations", "steps": ["Drop photos", "Select photo A → set pin/metadata", "Select photo B → set different pin", "Process all", "Download"] },
+    { "id": "csv-bulk", "steps": ["Drop photos", "Bulk-assign by CSV", "Resolve unmatched", "Process", "Download"] },
+    { "id": "activate-license", "steps": ["Click 'Enter license key' top-right", "Paste key", "Instant validation → unlocked"] },
+    { "id": "client-report", "steps": ["Open Reports", "Pick batch", "Add client + logo", "Export PDF/link"] }
+  ],
+
+  "states": {
+    "empty": { "workspace": "Big dropzone with cartographic illustration + 'Drag a photo to begin'", "library": "No batches yet — illustration + CTA to workspace", "reports": "No reports — explain value + CTA" },
+    "loading": { "pattern": "Skeletons for cards/tables; map shows shimmer; per-file progress in panel" },
+    "error": { "perPhoto": "Red status badge + tooltip reason (unsupported, corrupt, no GPS write)", "global": "Inline banner with retry; never lose the user's batch" },
+    "success": { "pattern": "Status badges flip to 'Tagged'; success toast; download CTA surfaces" },
+    "limitReached": { "pattern": "Usage meter turns warning; modal to upgrade seats/plan; never silently fail" }
+  },
+
+  "responsive": {
+    "breakpoints": { "sm": 640, "md": 768, "lg": 1024, "xl": 1280, "2xl": 1536 },
+    "workspace": { "desktop": "two-column studio", "tablet": "map on top + collapsible photos/metadata drawer below", "mobile": "stacked wizard (Upload → Locate → Metadata → Download)" },
+    "marketing": "Fully responsive; hero stacks; comparison table becomes scrollable cards on mobile."
+  },
+
+  "accessibility": {
+    "standards": "WCAG 2.2 AA",
+    "requirements": ["Keyboard-operable map pin (arrow-key nudge + coordinate input fallback)", "Visible focus rings (accent)", "Color is never the only status signal — pair badges with icon+label", "Alt text on photo thumbnails = filename", "Reduced-motion variant for pin drop / progress / grain drift", "Form labels + aria-live for batch progress and toasts", "Min contrast 4.5:1 for body text on charcoal/paper"]
+  },
+
+  "content": {
+    "microcopy": {
+      "dropzone": "Drag photos here or browse — JPG, PNG, WebP, HEIC",
+      "applyAll": "Apply this location to all photos",
+      "stamp": "Stamp & process",
+      "processing": "Stamping {done}/{total}…",
+      "done": "Stamped and ready to download",
+      "licensePrompt": "Enter your license key",
+      "vat": "Valid EU VAT ID? VAT is reverse-charged — you pay no VAT."
+    },
+    "legal": ["Terms", "Privacy (emphasize in-browser processing)", "Refund/cancel-anytime", "Imprint/Impressum (EU)"],
+    "support": { "promise": "1st-class support within 24 hours", "channel": "email", "address": "support@<domain>" }
+  },
+
+  "buildNotes": {
+    "designAgentInstructions": [
+      "Design the desktop two-column workspace FIRST — it's the product. Left column = Photos over Metadata; right column = large DARK map.",
+      "Use the APIDistributed canonical identity verbatim: charcoal #17171A base, ONE orange-red accent #FF4D1C, Archivo display, Hanken Grotesk body, JetBrains Mono for all technical values. Grain + 6-col grid + glass panels for depth. Pill+circular-arrow CTAs. Parenthetical uppercase eyebrows.",
+      "Style the map DARK so it integrates with the charcoal chrome; the accent pin must pop.",
+      "Every photo shows clear tag status at a glance (icon+label+color); batch progress is always visible while processing.",
+      "Show, don't tell, the differentiators: per-photo overrides, CSV assign, SEO-metadata tab, Geo Report.",
+      "Keep the 'Enter license key' pill-arrow top-right to match GeoImgr expectations.",
+      "Avoid AI-slop: no serif display, no purple gradients, no competing accents, no timid type."
+    ],
+    "outOfScopeForUI": ["actual EXIF/IPTC/XMP writing engine", "payment processor wiring", "auth backend", "Google Maps / Places API keys"]
+  },
+
+  "openAssumptions": [
+    "Product name 'GeoStamp' is a placeholder.",
+    "Pricing numbers are placeholders pending your decision.",
+    "HEIC is ingest-only (converted on export); confirm if you want HEIC output.",
+    "Default processing is in-browser/client-side for privacy; a cloud-sync option is mentioned but optional."
+  ]
+}
