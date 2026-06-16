@@ -2,6 +2,7 @@ import { useState } from "react";
 import { TopBar } from "./components/TopBar";
 import type { View } from "./components/TopBar";
 import { Workspace } from "./screens/Workspace";
+import { Library } from "./screens/Library";
 import { color, font } from "./theme";
 
 const PRODUCT_NAME = "GeoStamp";
@@ -35,7 +36,7 @@ export function App() {
         onLicense={() => {}}
       />
       {view === "workspace" && <Workspace />}
-      {view === "library" && <Placeholder title="Library" blurb="Every batch you've stamped — search, peek the EXIF, re-download. Faithful port coming in the next pass." />}
+      {view === "library" && <Library />}
       {view === "reports" && <Placeholder title="Reports" blurb="Client-ready geo-verification reports. Faithful port coming in the next pass." />}
     </div>
   );
