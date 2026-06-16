@@ -4,3 +4,4 @@ export * from "./geotag-engine";
 export * from "./licensing/types";
 export * from "./licensing/tiers";
 export * from "./licensing/parse";
+export * from "./licensing/verifier";
