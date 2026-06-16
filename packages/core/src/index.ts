@@ -7,3 +7,4 @@ export * from "./licensing/parse";
 export * from "./licensing/verifier";
 export * from "./usage";
 export * from "./activation-store";
+export * from "./licensing/entitlement";
