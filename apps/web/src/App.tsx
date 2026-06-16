@@ -3,6 +3,7 @@ import { TopBar } from "./components/TopBar";
 import type { View } from "./components/TopBar";
 import { Workspace } from "./screens/Workspace";
 import { Library } from "./screens/Library";
+import { Reports } from "./screens/Reports";
 import { color, font } from "./theme";
 
 const PRODUCT_NAME = "GeoStamp";
@@ -37,7 +38,7 @@ export function App() {
       />
       {view === "workspace" && <Workspace />}
       {view === "library" && <Library />}
-      {view === "reports" && <Placeholder title="Reports" blurb="Client-ready geo-verification reports. Faithful port coming in the next pass." />}
+      {view === "reports" && <Reports />}
     </div>
   );
 }
